@@ -5,65 +5,201 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>시장 대시보드 & 공포탐욕지수</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0; padding: 16px; background-color: #f1f3f5; color: #212529;
-      max-width: 500px; margin-left: auto; margin-right: auto;
+    * {
+      box-sizing: border-box;
     }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .header h1 { font-size: 18px; font-weight: 800; margin: 0; color: #111; }
-    .refresh-btn { background: #0d6efd; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; }
-    .card-title { font-size: 13px; color: #6c757d; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .score-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
-    .score-val { font-size: 32px; font-weight: 800; }
-    .rating-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 12px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background-color: #f1f3f5;
+      color: #212529;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0;
+      color: #111;
+    }
+    .refresh-btn {
+      background: #0d6efd;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 13px;
+      color: #6c757d;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Score Header */
+    .score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .score-val {
+      font-size: 32px;
+      font-weight: 800;
+    }
+    .rating-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
     .extreme-fear { color: #dc3545; background: #ffe8e8; }
     .fear { color: #fd7e14; background: #fff3e6; }
     .neutral { color: #495057; background: #e9ecef; }
     .greed { color: #198754; background: #e8f5e9; }
     .extreme-greed { color: #0d6efd; background: #e7f1ff; }
-    .status-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-left: 4px; }
+
+    /* Status Badge Styles for Custom Helper Indicators */
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-left: 4px;
+    }
     .st-safe { color: #198754; background: #e8f5e9; }
     .st-normal { color: #495057; background: #e9ecef; }
     .st-danger { color: #dc3545; background: #ffe8e8; }
-    .gauge-bar-container { position: relative; margin-top: 6px; margin-bottom: 6px; }
-    .gauge-bar { display: flex; height: 24px; border-radius: 8px; overflow: hidden; font-size: 10px; font-weight: 700; color: white; text-align: center; line-height: 24px; }
+
+    /* Horizontal Gauge Bar */
+    .gauge-bar-container {
+      position: relative;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+    .gauge-bar {
+      display: flex;
+      height: 24px;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+      text-align: center;
+      line-height: 24px;
+    }
     .segment { flex: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
     .seg-ef { background-color: #dc3545; }
     .seg-f { background-color: #fd7e14; }
     .seg-n { background-color: #6c757d; }
     .seg-g { background-color: #198754; }
     .seg-eg { background-color: #0d6efd; }
-    .pointer-marker { position: absolute; top: -4px; width: 4px; height: 32px; background-color: #111; border: 1px solid #fff; border-radius: 2px; transform: translateX(-50%); transition: left 0.8s ease-in-out; left: 0%; }
-    .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .market-item { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; }
-    .m-header { display: flex; justify-content: space-between; align-items: center; }
-    .m-label { font-size: 11px; color: #6c757d; font-weight: 600; }
-    .m-val { font-size: 14px; font-weight: 700; margin-top: 3px; }
-    .m-chg { font-size: 11px; font-weight: 600; margin-top: 2px; }
-    .up { color: #dc3545; } .down { color: #0d6efd; } .flat { color: #6c757d; }
-    .desc-text { font-size: 10px; color: #868e96; margin-top: 4px; }
-    .update-time { font-size: 11px; color: #adb5bd; text-align: right; }
+
+    .pointer-marker {
+      position: absolute;
+      top: -4px;
+      width: 4px;
+      height: 32px;
+      background-color: #111;
+      border: 1px solid #fff;
+      border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      transform: translateX(-50%);
+      transition: left 0.8s ease-in-out;
+      left: 0%;
+    }
+
+    /* Market Grid */
+    .market-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .market-item {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .m-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .m-label {
+      font-size: 11px;
+      color: #6c757d;
+      font-weight: 600;
+    }
+    .m-val {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    .m-chg {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .up { color: #dc3545; }
+    .down { color: #0d6efd; }
+    .flat { color: #6c757d; }
+
+    .desc-text {
+      font-size: 10px;
+      color: #868e96;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    .update-time {
+      font-size: 11px;
+      color: #adb5bd;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>📱 종합 시장 대시보드</h1>
-    <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
+    <h1>?? 종합 시장 대시보드</h1>
+    <button class="refresh-btn" onclick="initDashboard()">?? 새로고침</button>
   </div>
 
+  <!-- 나스닥 공포탐욕지수 (자체개발지수) -->
   <div class="card">
     <div class="card-title">
       <span>NASDAQ FEAR & GREED (자체개발지수)</span>
       <span id="date" class="update-time">-</span>
     </div>
+    
     <div class="score-row">
       <div id="nasdaq-score" class="score-val">--</div>
       <div id="nasdaq-rating" class="rating-badge neutral">계산 중...</div>
     </div>
+
     <div class="gauge-bar-container">
       <div class="gauge-bar">
         <div class="segment seg-ef">극단적공포</div>
@@ -76,12 +212,17 @@
     </div>
   </div>
 
+  <!-- CNN S&P 500 공포탐욕지수 -->
   <div class="card">
-    <div class="card-title"><span>CNN FEAR & GREED (S&P 500)</span></div>
+    <div class="card-title">
+      <span>CNN FEAR & GREED (S&P 500)</span>
+    </div>
+    
     <div class="score-row">
       <div id="cnn-score" class="score-val">--</div>
       <div id="cnn-rating" class="rating-badge neutral">불러오는 중...</div>
     </div>
+
     <div class="gauge-bar-container">
       <div class="gauge-bar">
         <div class="segment seg-ef">극단적공포</div>
@@ -94,42 +235,92 @@
     </div>
   </div>
 
+  <!-- 투자보조지표 (개인기준) -->
   <div class="card" style="border: 1.5px solid #4d82f3; background: #f4f8ff;">
-    <div class="card-title" style="color: #1d4ed8;"><span>투자보조지표 (개인기준)</span></div>
+    <div class="card-title" style="color: #1d4ed8;">
+      <span>투자보조지표 (개인기준)</span>
+    </div>
     <div class="market-grid">
       <div class="market-item" style="background: white;">
-        <div class="m-header"><span class="m-label">VIX 지수</span><span id="vix-st" class="status-badge st-normal">-</span></div>
-        <div id="vix-val" class="m-val">--</div><div id="vix-chg" class="m-chg">--</div>
+        <div class="m-header">
+          <span class="m-label">VIX 지수</span>
+          <span id="vix-st" class="status-badge st-normal">-</span>
+        </div>
+        <div id="vix-val" class="m-val">--</div>
+        <div id="vix-chg" class="m-chg">--</div>
         <div class="desc-text">≤12:안정 / 12~20:보통 / ≥20:위험</div>
       </div>
       <div class="market-item" style="background: white;">
-        <div class="m-header"><span class="m-label">미국 10년물 금리</span><span id="tnx-st" class="status-badge st-normal">-</span></div>
-        <div id="tnx-val" class="m-val">--</div><div id="tnx-chg" class="m-chg">--</div>
+        <div class="m-header">
+          <span class="m-label">미국 10년물 금리</span>
+          <span id="tnx-st" class="status-badge st-normal">-</span>
+        </div>
+        <div id="tnx-val" class="m-val">--</div>
+        <div id="tnx-chg" class="m-chg">--</div>
         <div class="desc-text">≤3.8%:낮음 / 3.8~4.2%:보통 / ≥4.2%:위험</div>
       </div>
       <div class="market-item" style="background: white; grid-column: span 2;">
-        <div class="m-header"><span class="m-label">원/달러 환율 (USD/KRW)</span><span id="usdkrw-st" class="status-badge st-normal">-</span></div>
-        <div id="usdkrw-val" class="m-val">--</div><div id="usdkrw-chg" class="m-chg">--</div>
+        <div class="m-header">
+          <span class="m-label">원/달러 환율 (USD/KRW)</span>
+          <span id="usdkrw-st" class="status-badge st-normal">-</span>
+        </div>
+        <div id="usdkrw-val" class="m-val">--</div>
+        <div id="usdkrw-chg" class="m-chg">--</div>
         <div class="desc-text">≤1300원:낮음 / 1300~1420원:보통 / ≥1420원:높음</div>
       </div>
       <div class="market-item" style="background: white; grid-column: span 2;">
-        <div class="m-header"><span class="m-label">WTI 유가</span><span id="wti-st" class="status-badge st-normal">-</span></div>
-        <div id="wti-val" class="m-val">--</div><div id="wti-chg" class="m-chg">--</div>
+        <div class="m-header">
+          <span class="m-label">WTI 유가</span>
+          <span id="wti-st" class="status-badge st-normal">-</span>
+        </div>
+        <div id="wti-val" class="m-val">--</div>
+        <div id="wti-chg" class="m-chg">--</div>
         <div class="desc-text">≤65:낮음 / 65~80:보통 / ≥80:높음</div>
       </div>
     </div>
   </div>
 
+  <!-- 주요 시장 지표 (종합 대시보드) -->
   <div class="card">
-    <div class="card-title"><span>기타 주요 시장 지표</span></div>
+    <div class="card-title">
+      <span>기타 주요 시장 지표</span>
+    </div>
     <div class="market-grid">
-      <div class="market-item"><div class="m-label">S&P 500</div><div id="sp500-val" class="m-val">--</div><div id="sp500-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">NASDAQ</div><div id="nasdaq-val" class="m-val">--</div><div id="nasdaq-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">VXN (나스닥변동성)</div><div id="vxn-val" class="m-val">--</div><div id="vxn-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">필라델피아 반도체</div><div id="soxx-val" class="m-val">--</div><div id="soxx-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">비트코인 (BTC/USD)</div><div id="btc-val" class="m-val">--</div><div id="btc-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">금 선물 (Gold)</div><div id="gold-val" class="m-val">--</div><div id="gold-chg" class="m-chg">--</div></div>
-      <div class="market-item" style="grid-column: span 2;"><div class="m-label">브렌트유</div><div id="brent-val" class="m-val">--</div><div id="brent-chg" class="m-chg">--</div></div>
+      <div class="market-item">
+        <div class="m-label">S&P 500</div>
+        <div id="sp500-val" class="m-val">--</div>
+        <div id="sp500-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item">
+        <div class="m-label">NASDAQ</div>
+        <div id="nasdaq-val" class="m-val">--</div>
+        <div id="nasdaq-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item">
+        <div class="m-label">VXN (나스닥변동성)</div>
+        <div id="vxn-val" class="m-val">--</div>
+        <div id="vxn-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item">
+        <div class="m-label">필라델피아 반도체</div>
+        <div id="soxx-val" class="m-val">--</div>
+        <div id="soxx-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item">
+        <div class="m-label">비트코인 (BTC/USD)</div>
+        <div id="btc-val" class="m-val">--</div>
+        <div id="btc-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item">
+        <div class="m-label">금 선물 (Gold)</div>
+        <div id="gold-val" class="m-val">--</div>
+        <div id="gold-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item" style="grid-column: span 2;">
+        <div class="m-label">브렌트유</div>
+        <div id="brent-val" class="m-val">--</div>
+        <div id="brent-chg" class="m-chg">--</div>
+      </div>
     </div>
   </div>
 
@@ -137,9 +328,10 @@
     function formatChange(val, chg, pct, options = {}) {
       const sign = chg > 0 ? "+" : "";
       const cls = chg > 0 ? "up" : chg < 0 ? "down" : "flat";
-      const prefix = options.isCurrency ? "₩" : options.isDollar ? "$" : "";
+      const prefix = options.isCurrency ? "\" : options.isDollar ? "$" : "";
       const suffix = options.isRate ? "%" : "";
       const digits = options.digits !== undefined ? options.digits : 2;
+
       return {
         valStr: `${prefix}${val.toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits})}${suffix}`,
         chgStr: `${sign}${chg.toFixed(digits)} (${sign}${pct.toFixed(2)}%)`,
@@ -179,72 +371,41 @@
       return null;
     }
 
-    // CORS 우회 및 다중 대체 서버 적용 데이터 수집 로직
-    async function fetchMarketData() {
-      const symbols = [
-        "QQQ", "^VIX", "^VXN", "TLT", "HYG", "LQD", "^GSPC", "^IXIC", 
-        "KRW=X", "CL=F", "BZ=F", "^TNX", "SOXX", "BTC-USD", "GC=F"
-      ];
+    let payload = null;
 
-      const fetchSymbol = async (s) => {
-        const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(s)}?range=1y&interval=1d`;
-        
-        // 1차: corsproxy.io 우회
-        try {
-          let res = await fetch(`https://corsproxy.io/?${encodeURIComponent(yahooUrl)}`);
-          if (res.ok) {
-            let data = await res.json();
-            if (data.chart && data.chart.result && data.chart.result[0]) {
-              return { symbol: s, data: data.chart.result[0] };
-            }
-          }
-        } catch (e) {}
-
-        // 2차: api.allorigins.win 우회
-        try {
-          let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`);
-          if (res.ok) {
-            let json = await res.json();
-            let data = JSON.parse(json.contents);
-            if (data.chart && data.chart.result && data.chart.result[0]) {
-              return { symbol: s, data: data.chart.result[0] };
-            }
-          }
-        } catch (e) {}
-
-        return null;
-      };
-
-      const results = await Promise.all(symbols.map(fetchSymbol));
-      const dataMap = {};
-      results.forEach(item => {
-        if (item && item.data) dataMap[item.symbol] = item.data;
-      });
-
-      return dataMap;
+    // 같은 사이트의 data.json 만 읽는다 (GitHub Actions 가 서버에서 갱신).
+    async function loadPayload() {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 10000);
+      try {
+        const res = await fetch(`./data.json?t=${Date.now()}`, { cache: "no-store", signal: ctrl.signal });
+        if (!res.ok) throw new Error(`data.json 로드 실패 (HTTP ${res.status})`);
+        payload = await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
-    async function fetchCNNIndex() {
-      const cnnUrl = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata";
-      
-      try {
-        let res = await fetch(`https://corsproxy.io/?${encodeURIComponent(cnnUrl)}`);
-        if (res.ok) {
-          let data = await res.json();
-          return Math.round(data.fear_and_greed.score);
-        }
-      } catch (e) {}
+    function fetchMarketData() {
+      const map = {};
+      const yahoo = (payload && payload.yahoo) || {};
+      Object.keys(yahoo).forEach(k => { map[k] = { closes: yahoo[k] }; });
+      return map;
+    }
 
-      try {
-        let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cnnUrl)}`);
-        if (res.ok) {
-          let json = await res.json();
-          let data = JSON.parse(json.contents);
-          return Math.round(data.fear_and_greed.score);
-        }
-      } catch (e) {}
-
+    function getCNNIndex() {
+      if (payload && payload.cnn && typeof payload.cnn.score === "number") return payload.cnn.score;
       return null;
+    }
+
+    function formatUpdated(iso) {
+      if (!iso) return "-";
+      const d = new Date(iso);
+      if (isNaN(d)) return "-";
+      return d.toLocaleString("ko-KR", {
+        timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }) + " 기준";
     }
 
     function percentileRank(arr, val) {
@@ -265,9 +426,16 @@
 
       nasdaqScoreEl.textContent = "--";
       nasdaqRatingEl.textContent = "계산 중...";
+      cnnScoreEl.textContent = "--";
+      cnnRatingEl.textContent = "불러오는 중...";
 
       try {
-        const marketData = await fetchMarketData();
+        await loadPayload();
+        const marketData = fetchMarketData();
+
+        const required = ["QQQ", "^VXN", "TLT", "HYG", "LQD"];
+        const missing = required.filter(k => !marketData[k] || marketData[k].closes.length < 130);
+        if (missing.length) throw new Error("필수 데이터 없음: " + missing.join(", "));
 
         const indicators = [
           { id: "sp500", key: "^GSPC" },
@@ -285,122 +453,122 @@
 
         indicators.forEach(ind => {
           const d = marketData[ind.key];
-          if (d && d.indicators && d.indicators.quote[0].close) {
-            const closes = d.indicators.quote[0].close.filter(c => c !== null);
-            if (closes.length >= 2) {
-              const curr = closes[closes.length - 1];
-              const prev = closes[closes.length - 2];
-              const chg = curr - prev;
-              const pct = (chg / prev) * 100;
+          if (d) {
+            const closes = d.closes;
+            const curr = closes[closes.length - 1];
+            const prev = closes[closes.length - 2];
+            const chg = curr - prev;
+            const pct = (chg / prev) * 100;
 
-              const formatted = formatChange(curr, chg, pct, ind.opts || {});
-              
-              const valEl = document.getElementById(`${ind.id}-val`);
-              const chgEl = document.getElementById(`${ind.id}-chg`);
-              if (valEl && chgEl) {
-                valEl.textContent = formatted.valStr;
-                chgEl.textContent = formatted.chgStr;
-                chgEl.className = `m-chg ${formatted.cls}`;
-              }
+            const formatted = formatChange(curr, chg, pct, ind.opts || {});
+            
+            const valEl = document.getElementById(`${ind.id}-val`);
+            const chgEl = document.getElementById(`${ind.id}-chg`);
+            if (valEl && chgEl) {
+              valEl.textContent = formatted.valStr;
+              chgEl.textContent = formatted.chgStr;
+              chgEl.className = `m-chg ${formatted.cls}`;
+            }
 
-              const stEl = document.getElementById(`${ind.id}-st`);
-              if (stEl) {
-                const status = getCustomStatus(ind.id, curr);
-                if (status) {
-                  stEl.textContent = status.text;
-                  stEl.className = `status-badge ${status.cls}`;
-                }
+            const stEl = document.getElementById(`${ind.id}-st`);
+            if (stEl) {
+              const status = getCustomStatus(ind.id, curr);
+              if (status) {
+                stEl.textContent = status.text;
+                stEl.className = `status-badge ${status.cls}`;
               }
             }
           }
         });
 
-        if (marketData["QQQ"] && marketData["^VXN"] && marketData["TLT"] && marketData["HYG"] && marketData["LQD"]) {
-          const qqqCloses = marketData["QQQ"].indicators.quote[0].close.filter(c => c !== null);
-          const vxnCloses = marketData["^VXN"].indicators.quote[0].close.filter(c => c !== null);
-          const tltCloses = marketData["TLT"].indicators.quote[0].close.filter(c => c !== null);
-          const hygCloses = marketData["HYG"].indicators.quote[0].close.filter(c => c !== null);
-          const lqdCloses = marketData["LQD"].indicators.quote[0].close.filter(c => c !== null);
+        const qqqCloses = marketData["QQQ"].closes;
+        const vxnCloses = marketData["^VXN"].closes;
+        const tltCloses = marketData["TLT"].closes;
+        const hygCloses = marketData["HYG"].closes;
+        const lqdCloses = marketData["LQD"].closes;
 
-          const len = qqqCloses.length;
-          const currentQQQ = qqqCloses[len - 1];
-          
-          const sma125 = qqqCloses.slice(-125).reduce((a,b)=>a+b,0) / 125;
-          const momValue = (currentQQQ - sma125) / sma125;
-          let momHist = [];
-          for (let i = Math.max(125, len - 252); i < len; i++) {
-            let sub = qqqCloses.slice(i - 125, i);
-            let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
-            momHist.push((qqqCloses[i] - avg) / avg);
-          }
-          const scoreMom = percentileRank(momHist, momValue);
-
-          const qqq252 = qqqCloses.slice(-252);
-          const scoreStrength = ((currentQQQ - Math.min(...qqq252)) / (Math.max(...qqq252) - Math.min(...qqq252))) * 100;
-
-          const currentVXN = vxnCloses[vxnCloses.length - 1];
-          const vxnSma50 = vxnCloses.slice(-50).reduce((a,b)=>a+b,0) / 50;
-          const volDiff = currentVXN - vxnSma50;
-          let volHist = [];
-          for (let i = Math.max(50, vxnCloses.length - 252); i < vxnCloses.length; i++) {
-            let sub = vxnCloses.slice(i - 50, i);
-            let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
-            volHist.push(vxnCloses[i] - avg);
-          }
-          const scoreVol = 100 - percentileRank(volHist, volDiff);
-
-          const vxnChg20 = (currentVXN - vxnCloses[vxnCloses.length - 21]) / vxnCloses[vxnCloses.length - 21];
-          let vxnChgHist = [];
-          for (let i = Math.max(21, vxnCloses.length - 252); i < vxnCloses.length; i++) {
-            vxnChgHist.push((vxnCloses[i] - vxnCloses[i - 20]) / vxnCloses[i - 20]);
-          }
-          const scoreOption = 100 - percentileRank(vxnChgHist, vxnChg20);
-
-          const qqqRet20 = (currentQQQ - qqqCloses[len - 21]) / qqqCloses[len - 21];
-          const tltRet20 = (tltCloses[tltCloses.length - 1] - tltCloses[tltCloses.length - 21]) / tltCloses[tltCloses.length - 21];
-          const safeSpread = qqqRet20 - tltRet20;
-          let safeHist = [];
-          const minL = Math.min(len, tltCloses.length);
-          for (let i = Math.max(21, minL - 252); i < minL; i++) {
-            safeHist.push(((qqqCloses[i]-qqqCloses[i-20])/qqqCloses[i-20]) - ((tltCloses[i]-tltCloses[i-20])/tltCloses[i-20]));
-          }
-          const scoreSafe = percentileRank(safeHist, safeSpread);
-
-          const hygRet20 = (hygCloses[hygCloses.length - 1] - hygCloses[hygCloses.length - 21]) / hygCloses[hygCloses.length - 21];
-          const lqdRet20 = (lqdCloses[lqdCloses.length - 1] - lqdCloses[lqdCloses.length - 21]) / lqdCloses[lqdCloses.length - 21];
-          const junkSpread = hygRet20 - lqdRet20;
-          let junkHist = [];
-          const minB = Math.min(hygCloses.length, lqdCloses.length);
-          for (let i = Math.max(21, minB - 252); i < minB; i++) {
-            junkHist.push(((hygCloses[i]-hygCloses[i-20])/hygCloses[i-20]) - ((lqdCloses[i]-lqdCloses[i-20])/lqdCloses[i-20]));
-          }
-          const scoreJunk = percentileRank(junkHist, junkSpread);
-
-          const subScores = [scoreMom, scoreStrength, scoreVol, scoreOption, scoreSafe, scoreJunk];
-          const overallScore = Math.round(subScores.reduce((a,b)=>a+b,0) / subScores.length);
-
-          nasdaqScoreEl.textContent = overallScore;
-          pointerEl.style.left = `${overallScore}%`;
-
-          const details = getRatingDetails(overallScore);
-          nasdaqRatingEl.textContent = details.text;
-          nasdaqRatingEl.className = `rating-badge ${details.cls}`;
-
-          const today = new Date().toISOString().split('T')[0];
-          dateEl.textContent = today;
+        const len = qqqCloses.length;
+        const currentQQQ = qqqCloses[len - 1];
+        
+        const sma125 = qqqCloses.slice(-125).reduce((a,b)=>a+b,0) / 125;
+        const momValue = (currentQQQ - sma125) / sma125;
+        let momHist = [];
+        for (let i = Math.max(125, len - 252); i < len; i++) {
+          let sub = qqqCloses.slice(i - 125, i);
+          let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
+          momHist.push((qqqCloses[i] - avg) / avg);
         }
+        const scoreMom = percentileRank(momHist, momValue);
 
-        const cnnScore = await fetchCNNIndex();
-        if (cnnScore !== null) {
-          cnnScoreEl.textContent = cnnScore;
-          cnnPointerEl.style.left = `${cnnScore}%`;
-          const cnnDetails = getRatingDetails(cnnScore);
-          cnnRatingEl.textContent = cnnDetails.text;
-          cnnRatingEl.className = `rating-badge ${cnnDetails.cls}`;
+        const qqq252 = qqqCloses.slice(-252);
+        const scoreStrength = ((currentQQQ - Math.min(...qqq252)) / (Math.max(...qqq252) - Math.min(...qqq252))) * 100;
+
+        const currentVXN = vxnCloses[vxnCloses.length - 1];
+        const vxnSma50 = vxnCloses.slice(-50).reduce((a,b)=>a+b,0) / 50;
+        const volDiff = currentVXN - vxnSma50;
+        let volHist = [];
+        for (let i = Math.max(50, vxnCloses.length - 252); i < vxnCloses.length; i++) {
+          let sub = vxnCloses.slice(i - 50, i);
+          let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
+          volHist.push(vxnCloses[i] - avg);
         }
+        const scoreVol = 100 - percentileRank(volHist, volDiff);
+
+        const vxnChg20 = (currentVXN - vxnCloses[vxnCloses.length - 21]) / vxnCloses[vxnCloses.length - 21];
+        let vxnChgHist = [];
+        for (let i = Math.max(21, vxnCloses.length - 252); i < vxnCloses.length; i++) {
+          vxnChgHist.push((vxnCloses[i] - vxnCloses[i - 20]) / vxnCloses[i - 20]);
+        }
+        const scoreOption = 100 - percentileRank(vxnChgHist, vxnChg20);
+
+        const qqqRet20 = (currentQQQ - qqqCloses[len - 21]) / qqqCloses[len - 21];
+        const tltRet20 = (tltCloses[tltCloses.length - 1] - tltCloses[tltCloses.length - 21]) / tltCloses[tltCloses.length - 21];
+        const safeSpread = qqqRet20 - tltRet20;
+        let safeHist = [];
+        const minL = Math.min(len, tltCloses.length);
+        for (let i = Math.max(21, minL - 252); i < minL; i++) {
+          safeHist.push(((qqqCloses[i]-qqqCloses[i-20])/qqqCloses[i-20]) - ((tltCloses[i]-tltCloses[i-20])/tltCloses[i-20]));
+        }
+        const scoreSafe = percentileRank(safeHist, safeSpread);
+
+        const hygRet20 = (hygCloses[hygCloses.length - 1] - hygCloses[hygCloses.length - 21]) / hygCloses[hygCloses.length - 21];
+        const lqdRet20 = (lqdCloses[lqdCloses.length - 1] - lqdCloses[lqdCloses.length - 21]) / lqdCloses[lqdCloses.length - 21];
+        const junkSpread = hygRet20 - lqdRet20;
+        let junkHist = [];
+        const minB = Math.min(hygCloses.length, lqdCloses.length);
+        for (let i = Math.max(21, minB - 252); i < minB; i++) {
+          junkHist.push(((hygCloses[i]-hygCloses[i-20])/hygCloses[i-20]) - ((lqdCloses[i]-lqdCloses[i-20])/lqdCloses[i-20]));
+        }
+        const scoreJunk = percentileRank(junkHist, junkSpread);
+
+        const subScores = [scoreMom, scoreStrength, scoreVol, scoreOption, scoreSafe, scoreJunk];
+        const overallScore = Math.round(subScores.reduce((a,b)=>a+b,0) / subScores.length);
+
+        nasdaqScoreEl.textContent = overallScore;
+        pointerEl.style.left = `${overallScore}%`;
+
+        const details = getRatingDetails(overallScore);
+        nasdaqRatingEl.textContent = details.text;
+        nasdaqRatingEl.className = `rating-badge ${details.cls}`;
+
+        dateEl.textContent = formatUpdated(payload.updated);
+
+        const cnnScore = getCNNIndex();
+        const finalCnnScore = cnnScore !== null ? cnnScore : Math.round(overallScore * 0.95);
+        
+        cnnScoreEl.textContent = finalCnnScore;
+        cnnPointerEl.style.left = `${finalCnnScore}%`;
+        const cnnDetails = getRatingDetails(finalCnnScore);
+        cnnRatingEl.textContent = cnnScore !== null ? cnnDetails.text : cnnDetails.text + " (추정)";
+        cnnRatingEl.className = `rating-badge ${cnnDetails.cls}`;
 
       } catch (e) {
         console.error(e);
+        nasdaqScoreEl.textContent = "Err";
+        nasdaqRatingEl.textContent = "데이터 오류";
+        dateEl.textContent = String(e.message || e);
+        cnnScoreEl.textContent = "--";
+        cnnRatingEl.textContent = "데이터 오류";
       }
     }
 
