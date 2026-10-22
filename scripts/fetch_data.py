@@ -12,13 +12,28 @@ def calc_rsi(series, period=14):
     return 100 - (100 / (1 + rs))
 
 def fetch_cnn_fg():
-    headers = {'User-Agent': 'Mozilla/5.0'}
     url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://edition.cnn.com/'
+    }
     try:
         r = requests.get(url, headers=headers, timeout=10)
-        return int(r.json()['fear_and_greed']['score'])
+        if r.status_code == 200:
+            return int(r.json()['fear_and_greed']['score'])
     except:
-        return 50
+        pass
+    
+    try:
+        proxy_url = "https://api.allorigins.win/raw?url=" + url
+        r = requests.get(proxy_url, timeout=10)
+        if r.status_code == 200:
+            return int(r.json()['fear_and_greed']['score'])
+    except:
+        pass
+    
+    return None # 실패 시 임의의 값(50)을 넣지 않고 데이터 없음을 명시
 
 def percentile_rank(arr, val):
     if not arr: return 50
@@ -33,7 +48,6 @@ def main():
     ]
     
     print("Downloading market data...")
-    # yfinance 오타 수정된 부분
     df = yf.download(tickers, period="2y", interval="1d")['Close']
     
     market_data = {}
@@ -62,7 +76,7 @@ def main():
         except Exception as e:
             print(f"Error processing {t}: {e}")
 
-    nasdaq_fg = 50
+    nasdaq_fg = None # 기본값을 None으로 설정하여 실패 시 조회불가 처리
     try:
         q = df["QQQ"].dropna().tolist()
         v = df["^VXN"].dropna().tolist()
@@ -105,8 +119,6 @@ def main():
     
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
-    
-    print("data.json successfully updated.")
 
 if __name__ == "__main__":
     main()
