@@ -10,6 +10,8 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .header h1 { font-size: 18px; font-weight: 800; margin: 0; color: #111; }
     .refresh-btn { background: #0d6efd; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .time-info { background: #e9ecef; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; color: #6c757d; display: flex; justify-content: space-between; font-weight: 600; }
+    .time-info span.time-val { color: #212529; font-weight: 700; margin-left: 4px; }
     .card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; }
     .card-title { font-size: 13px; color: #6c757d; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .score-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
@@ -43,7 +45,6 @@
     .m-rsi { font-size: 10px; color: #495057; font-weight: 600; margin-top: 2px; }
     .up { color: #dc3545; } .down { color: #0d6efd; } .flat { color: #6c757d; }
     .desc-text { font-size: 10px; color: #868e96; margin-top: 4px; line-height: 1.3; }
-    .update-time { font-size: 11px; color: #6c757d; font-weight: 600; text-align: right; }
     .err-msg { color: #dc3545; font-size: 14px; font-weight: 700; }
   </style>
 </head>
@@ -53,8 +54,13 @@
     <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
   </div>
 
+  <div class="time-info">
+    <div>현재 데이터: <span id="last-update-time" class="time-val">--</span></div>
+    <div>다음 업데이트: <span id="next-update-time" class="time-val">--</span></div>
+  </div>
+
   <div class="card">
-    <div class="card-title"><span>CNN FEAR & GREED (S&P 500)</span><span id="date" class="update-time">-</span></div>
+    <div class="card-title"><span>CNN FEAR & GREED (S&P 500)</span></div>
     <div class="score-row">
       <div id="cnn-score" class="score-val">--</div>
       <div id="cnn-rating" class="rating-badge neutral">로딩 중...</div>
@@ -156,16 +162,13 @@
   </div>
 
   <script>
-    let lastFetchTimestamp = null;
-
-    function updateTimeAgo() {
-      const dateEl = document.getElementById("date");
-      if (!lastFetchTimestamp) return;
-      const diffSec = Math.floor((new Date() - lastFetchTimestamp) / 1000);
-      if (diffSec < 60) dateEl.textContent = "방금 전";
-      else dateEl.textContent = `${Math.floor(diffSec / 60)}분 전`;
+    function formatTime(date) {
+      if (!date) return "--";
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      const ss = String(date.getSeconds()).padStart(2, '0');
+      return `${hh}:${mm}:${ss}`;
     }
-    setInterval(updateTimeAgo, 10000);
 
     function getRatingDetails(score) {
       if (score < 25) return { text: "극단적 공포", cls: "extreme-fear" };
@@ -199,7 +202,6 @@
       const stEl = document.getElementById(`${id}-st`);
       const rsiEl = document.getElementById(`${id}-rsi`);
 
-      // 데이터가 없거나 수집에 실패한 경우 "조회불가" 처리
       if (!dataObj || dataObj.price === undefined || dataObj.price === null) {
         if(valEl) { valEl.textContent = "조회불가"; valEl.className = "m-val err-msg"; }
         if(chgEl) { chgEl.textContent = "-"; chgEl.className = "m-chg flat"; }
@@ -215,7 +217,7 @@
       
       if(valEl) {
           valEl.textContent = `${prefix}${dataObj.price.toLocaleString(undefined, {minimumFractionDigits:opts.dig??2, maximumFractionDigits:opts.dig??2})}${suffix}`;
-          valEl.className = "m-val"; // 에러 클래스 리셋
+          valEl.className = "m-val";
       }
       if(chgEl) {
         chgEl.textContent = `${sign}${dataObj.chg.toFixed(opts.dig??2)} (${sign}${dataObj.chg_pct.toFixed(2)}%)`;
@@ -237,14 +239,16 @@
         const data = await res.json();
         
         if (!data.market) {
-          document.getElementById("date").textContent = "데이터 갱신 대기중...";
+          document.getElementById("last-update-time").textContent = "갱신 대기중...";
           return;
         }
 
-        lastFetchTimestamp = new Date(data.timestamp);
-        updateTimeAgo();
+        const lastFetchTimestamp = new Date(data.timestamp);
+        const nextFetchTimestamp = new Date(lastFetchTimestamp.getTime() + 5 * 60000); // 5분 더하기
 
-        // CNN 지수 에러 처리
+        document.getElementById("last-update-time").textContent = formatTime(lastFetchTimestamp);
+        document.getElementById("next-update-time").textContent = formatTime(nextFetchTimestamp);
+
         if(data.cnn_fg !== undefined && data.cnn_fg !== null) {
           const cnnData = getRatingDetails(data.cnn_fg);
           document.getElementById("cnn-score").textContent = data.cnn_fg;
@@ -264,7 +268,6 @@
           document.getElementById("cnn-pointer").style.display = "none";
         }
 
-        // NASDAQ 지수 에러 처리
         if(data.nasdaq_fg !== undefined && data.nasdaq_fg !== null) {
           const nasData = getRatingDetails(data.nasdaq_fg);
           document.getElementById("nasdaq-score").textContent = data.nasdaq_fg;
@@ -293,7 +296,7 @@
 
       } catch (e) {
         console.error("데이터 로드 실패:", e);
-        document.getElementById("date").textContent = "연결 오류";
+        document.getElementById("last-update-time").textContent = "연결 오류";
       }
     }
 
