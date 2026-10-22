@@ -2,8 +2,8 @@ name: Update Market Data
 
 on:
   schedule:
-    # 15분마다 자동으로 데이터 수집 스크립트 실행
-    - cron: '*/15 * * * *'
+    # 5분마다 자동으로 데이터 수집 스크립트 실행
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
