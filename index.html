@@ -52,30 +52,22 @@
     <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
   </div>
 
-  <!-- 1. CNN FEAR & GREED -->
   <div class="card">
-    <div class="card-title">
-      <span>CNN FEAR & GREED (S&P 500)</span>
-      <span id="date" class="update-time">-</span>
-    </div>
+    <div class="card-title"><span>CNN FEAR & GREED (S&P 500)</span><span id="date" class="update-time">-</span></div>
     <div class="score-row">
       <div id="cnn-score" class="score-val">--</div>
       <div id="cnn-rating" class="rating-badge neutral">로딩 중...</div>
     </div>
     <div class="gauge-bar-container">
       <div class="gauge-bar">
-        <div class="segment seg-ef">극단적공포</div>
-        <div class="segment seg-f">공포</div>
-        <div class="segment seg-n">중립</div>
-        <div class="segment seg-g">탐욕</div>
-        <div class="segment seg-eg">극단적탐욕</div>
+        <div class="segment seg-ef">극단적공포</div><div class="segment seg-f">공포</div>
+        <div class="segment seg-n">중립</div><div class="segment seg-g">탐욕</div><div class="segment seg-eg">극단적탐욕</div>
       </div>
       <div id="cnn-pointer" class="pointer-marker"></div>
     </div>
     <div class="gauge-ticks"><span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span></div>
   </div>
 
-  <!-- 2. 투자보조지표 -->
   <div class="card" style="border: 1.5px solid #6f42c1; background: #f8f5fc;">
     <div class="card-title" style="color: #593196;"><span>투자보조지표 (개인기준)</span></div>
     <div class="market-grid">
@@ -102,7 +94,6 @@
     </div>
   </div>
 
-  <!-- 3. 주요 미국 ETF -->
   <div class="card" style="border: 1.5px solid #0d6efd; background: #f0f7ff;">
     <div class="card-title" style="color: #0b5ed7;"><span>주요 미국 ETF (RSI 지표)</span></div>
     <div class="market-grid">
@@ -124,50 +115,39 @@
     </div>
   </div>
 
-  <!-- 4. 국내증시 & 주요종목 -->
   <div class="card" style="border: 1.5px solid #198754; background: #f2faf5;">
     <div class="card-title" style="color: #146c43;"><span>국내증시 & 주요종목</span></div>
     <div class="market-grid">
       <div class="market-item" style="background: white;">
-        <div class="m-label">KOSPI (코스피)</div>
-        <div id="kospi-val" class="m-val">--</div><div id="kospi-chg" class="m-chg">--</div>
+        <div class="m-label">KOSPI (코스피)</div><div id="kospi-val" class="m-val">--</div><div id="kospi-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
-        <div class="m-label">KOSDAQ (코스닥)</div>
-        <div id="kosdaq-val" class="m-val">--</div><div id="kosdaq-chg" class="m-chg">--</div>
+        <div class="m-label">KOSDAQ (코스닥)</div><div id="kosdaq-val" class="m-val">--</div><div id="kosdaq-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
-        <div class="m-label">삼성전자 (005930)</div>
-        <div id="samsung-val" class="m-val">--</div><div id="samsung-chg" class="m-chg">--</div>
+        <div class="m-label">삼성전자 (005930)</div><div id="samsung-val" class="m-val">--</div><div id="samsung-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
-        <div class="m-label">SK하이닉스 (000660)</div>
-        <div id="skhynix-val" class="m-val">--</div><div id="skhynix-chg" class="m-chg">--</div>
+        <div class="m-label">SK하이닉스 (000660)</div><div id="skhynix-val" class="m-val">--</div><div id="skhynix-chg" class="m-chg">--</div>
       </div>
     </div>
   </div>
 
-  <!-- 5. NASDAQ FEAR & GREED -->
   <div class="card">
     <div class="card-title"><span>NASDAQ FEAR & GREED (자체개발지수)</span></div>
     <div class="score-row">
-      <div id="nasdaq-score" class="score-val">--</div>
-      <div id="nasdaq-rating" class="rating-badge neutral">로딩 중...</div>
+      <div id="nasdaq-score" class="score-val">--</div><div id="nasdaq-rating" class="rating-badge neutral">로딩 중...</div>
     </div>
     <div class="gauge-bar-container">
       <div class="gauge-bar">
-        <div class="segment seg-ef">극단적공포</div>
-        <div class="segment seg-f">공포</div>
-        <div class="segment seg-n">중립</div>
-        <div class="segment seg-g">탐욕</div>
-        <div class="segment seg-eg">극단적탐욕</div>
+        <div class="segment seg-ef">극단적공포</div><div class="segment seg-f">공포</div>
+        <div class="segment seg-n">중립</div><div class="segment seg-g">탐욕</div><div class="segment seg-eg">극단적탐욕</div>
       </div>
       <div id="nasdaq-pointer" class="pointer-marker"></div>
     </div>
     <div class="gauge-ticks"><span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span></div>
   </div>
 
-  <!-- 6. 기타 지표 -->
   <div class="card">
     <div class="card-title"><span>기타 주요 시장 지표</span></div>
     <div class="market-grid">
@@ -219,7 +199,7 @@
     }
 
     function updateDOM(id, dataObj, opts = {}) {
-      if (!dataObj) return;
+      if (!dataObj || dataObj.price === undefined) return;
       const prefix = opts.cur ? "₩" : opts.dol ? "$" : "";
       const suffix = opts.pct ? "%" : "";
       const sign = dataObj.chg > 0 ? "+" : "";
@@ -246,25 +226,34 @@
     async function initDashboard() {
       try {
         const res = await fetch(`data.json?v=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("데이터를 찾을 수 없습니다.");
         const data = await res.json();
         
+        // 과거 구조의 데이터인 경우 렌더링 중단
+        if (!data.market) {
+          document.getElementById("date").textContent = "데이터 갱신 대기중...";
+          return;
+        }
+
         lastFetchTimestamp = new Date(data.timestamp);
         updateTimeAgo();
 
-        // F&G 업데이트
-        const cnnData = getRatingDetails(data.cnn_fg);
-        document.getElementById("cnn-score").textContent = data.cnn_fg;
-        document.getElementById("cnn-rating").textContent = cnnData.text;
-        document.getElementById("cnn-rating").className = `rating-badge ${cnnData.cls}`;
-        document.getElementById("cnn-pointer").style.left = `${calcPointer(data.cnn_fg)}%`;
+        if(data.cnn_fg !== undefined) {
+          const cnnData = getRatingDetails(data.cnn_fg);
+          document.getElementById("cnn-score").textContent = data.cnn_fg;
+          document.getElementById("cnn-rating").textContent = cnnData.text;
+          document.getElementById("cnn-rating").className = `rating-badge ${cnnData.cls}`;
+          document.getElementById("cnn-pointer").style.left = `${calcPointer(data.cnn_fg)}%`;
+        }
 
-        const nasData = getRatingDetails(data.nasdaq_fg);
-        document.getElementById("nasdaq-score").textContent = data.nasdaq_fg;
-        document.getElementById("nasdaq-rating").textContent = nasData.text;
-        document.getElementById("nasdaq-rating").className = `rating-badge ${nasData.cls}`;
-        document.getElementById("nasdaq-pointer").style.left = `${calcPointer(data.nasdaq_fg)}%`;
+        if(data.nasdaq_fg !== undefined) {
+          const nasData = getRatingDetails(data.nasdaq_fg);
+          document.getElementById("nasdaq-score").textContent = data.nasdaq_fg;
+          document.getElementById("nasdaq-rating").textContent = nasData.text;
+          document.getElementById("nasdaq-rating").className = `rating-badge ${nasData.cls}`;
+          document.getElementById("nasdaq-pointer").style.left = `${calcPointer(data.nasdaq_fg)}%`;
+        }
 
-        // 마켓 데이터 매핑
         const md = data.market;
         updateDOM("vix", md["^VIX"]); updateDOM("tnx", md["^TNX"], {pct:true}); updateDOM("usdkrw", md["KRW=X"], {cur:true, dig:1}); updateDOM("wti", md["CL=F"], {dol:true});
         updateDOM("spy", md["SPY"], {dol:true}); updateDOM("qqq", md["QQQ"], {dol:true}); updateDOM("soxx", md["SOXX"], {dol:true});
@@ -274,6 +263,7 @@
 
       } catch (e) {
         console.error("데이터 로드 실패:", e);
+        document.getElementById("date").textContent = "연결 오류";
       }
     }
 
