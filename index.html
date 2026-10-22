@@ -6,11 +6,7 @@
   <title>시장 대시보드 & 공포탐욕지수</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0; padding: 16px; background-color: #f1f3f5; color: #212529;
-      max-width: 500px; margin-left: auto; margin-right: auto;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; background-color: #f1f3f5; color: #212529; max-width: 500px; margin-left: auto; margin-right: auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .header h1 { font-size: 18px; font-weight: 800; margin: 0; color: #111; }
     .refresh-btn { background: #0d6efd; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -51,13 +47,12 @@
   </style>
 </head>
 <body>
-
   <div class="header">
     <h1>📱 종합 시장 대시보드</h1>
     <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
   </div>
 
-  <!-- 1. CNN FEAR & GREED (S&P 500) -->
+  <!-- 1. CNN FEAR & GREED -->
   <div class="card">
     <div class="card-title">
       <span>CNN FEAR & GREED (S&P 500)</span>
@@ -65,7 +60,7 @@
     </div>
     <div class="score-row">
       <div id="cnn-score" class="score-val">--</div>
-      <div id="cnn-rating" class="rating-badge neutral">불러오는 중...</div>
+      <div id="cnn-rating" class="rating-badge neutral">로딩 중...</div>
     </div>
     <div class="gauge-bar-container">
       <div class="gauge-bar">
@@ -77,12 +72,10 @@
       </div>
       <div id="cnn-pointer" class="pointer-marker"></div>
     </div>
-    <div class="gauge-ticks">
-      <span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span>
-    </div>
+    <div class="gauge-ticks"><span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span></div>
   </div>
 
-  <!-- 2. 투자보조지표 (개인기준) -->
+  <!-- 2. 투자보조지표 -->
   <div class="card" style="border: 1.5px solid #6f42c1; background: #f8f5fc;">
     <div class="card-title" style="color: #593196;"><span>투자보조지표 (개인기준)</span></div>
     <div class="market-grid">
@@ -109,24 +102,24 @@
     </div>
   </div>
 
-  <!-- 3. 주요 미국 ETF (RSI 지표) -->
+  <!-- 3. 주요 미국 ETF -->
   <div class="card" style="border: 1.5px solid #0d6efd; background: #f0f7ff;">
     <div class="card-title" style="color: #0b5ed7;"><span>주요 미국 ETF (RSI 지표)</span></div>
     <div class="market-grid">
       <div class="market-item" style="background: white;">
         <div class="m-label">SPY (S&P 500)</div>
-        <div id="etf-spy-val" class="m-val">--</div><div id="etf-spy-chg" class="m-chg">--</div>
-        <div id="etf-spy-rsi" class="m-rsi">RSI(14): --</div>
+        <div id="spy-val" class="m-val">--</div><div id="spy-chg" class="m-chg">--</div>
+        <div id="spy-rsi" class="m-rsi">RSI(14): --</div>
       </div>
       <div class="market-item" style="background: white;">
         <div class="m-label">QQQ (NASDAQ 100)</div>
-        <div id="etf-qqq-val" class="m-val">--</div><div id="etf-qqq-chg" class="m-chg">--</div>
-        <div id="etf-qqq-rsi" class="m-rsi">RSI(14): --</div>
+        <div id="qqq-val" class="m-val">--</div><div id="qqq-chg" class="m-chg">--</div>
+        <div id="qqq-rsi" class="m-rsi">RSI(14): --</div>
       </div>
       <div class="market-item" style="background: white; grid-column: span 2;">
         <div class="m-label">SOXX (반도체 ETF)</div>
-        <div id="etf-soxx-val" class="m-val">--</div><div id="etf-soxx-chg" class="m-chg">--</div>
-        <div id="etf-soxx-rsi" class="m-rsi">RSI(14): --</div>
+        <div id="soxx-val" class="m-val">--</div><div id="soxx-chg" class="m-chg">--</div>
+        <div id="soxx-rsi" class="m-rsi">RSI(14): --</div>
       </div>
     </div>
   </div>
@@ -137,29 +130,29 @@
     <div class="market-grid">
       <div class="market-item" style="background: white;">
         <div class="m-label">KOSPI (코스피)</div>
-        <div id="kr-kospi-val" class="m-val">--</div><div id="kr-kospi-chg" class="m-chg">--</div>
+        <div id="kospi-val" class="m-val">--</div><div id="kospi-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
         <div class="m-label">KOSDAQ (코스닥)</div>
-        <div id="kr-kosdaq-val" class="m-val">--</div><div id="kr-kosdaq-chg" class="m-chg">--</div>
+        <div id="kosdaq-val" class="m-val">--</div><div id="kosdaq-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
         <div class="m-label">삼성전자 (005930)</div>
-        <div id="kr-samsung-val" class="m-val">--</div><div id="kr-samsung-chg" class="m-chg">--</div>
+        <div id="samsung-val" class="m-val">--</div><div id="samsung-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;">
         <div class="m-label">SK하이닉스 (000660)</div>
-        <div id="kr-skhynix-val" class="m-val">--</div><div id="kr-skhynix-chg" class="m-chg">--</div>
+        <div id="skhynix-val" class="m-val">--</div><div id="skhynix-chg" class="m-chg">--</div>
       </div>
     </div>
   </div>
 
-  <!-- 5. NASDAQ FEAR & GREED (자체개발지수) -->
+  <!-- 5. NASDAQ FEAR & GREED -->
   <div class="card">
     <div class="card-title"><span>NASDAQ FEAR & GREED (자체개발지수)</span></div>
     <div class="score-row">
       <div id="nasdaq-score" class="score-val">--</div>
-      <div id="nasdaq-rating" class="rating-badge neutral">계산 중...</div>
+      <div id="nasdaq-rating" class="rating-badge neutral">로딩 중...</div>
     </div>
     <div class="gauge-bar-container">
       <div class="gauge-bar">
@@ -169,10 +162,21 @@
         <div class="segment seg-g">탐욕</div>
         <div class="segment seg-eg">극단적탐욕</div>
       </div>
-      <div id="pointer" class="pointer-marker"></div>
+      <div id="nasdaq-pointer" class="pointer-marker"></div>
     </div>
-    <div class="gauge-ticks">
-      <span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span>
+    <div class="gauge-ticks"><span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span></div>
+  </div>
+
+  <!-- 6. 기타 지표 -->
+  <div class="card">
+    <div class="card-title"><span>기타 주요 시장 지표</span></div>
+    <div class="market-grid">
+      <div class="market-item"><div class="m-label">S&P 500</div><div id="sp500-val" class="m-val">--</div><div id="sp500-chg" class="m-chg">--</div></div>
+      <div class="market-item"><div class="m-label">NASDAQ</div><div id="nasdaqidx-val" class="m-val">--</div><div id="nasdaqidx-chg" class="m-chg">--</div></div>
+      <div class="market-item"><div class="m-label">VXN (나스닥변동성)</div><div id="vxn-val" class="m-val">--</div><div id="vxn-chg" class="m-chg">--</div></div>
+      <div class="market-item"><div class="m-label">비트코인 (BTC/USD)</div><div id="btc-val" class="m-val">--</div><div id="btc-chg" class="m-chg">--</div></div>
+      <div class="market-item"><div class="m-label">금 선물 (Gold)</div><div id="gold-val" class="m-val">--</div><div id="gold-chg" class="m-chg">--</div></div>
+      <div class="market-item"><div class="m-label">브렌트유</div><div id="brent-val" class="m-val">--</div><div id="brent-chg" class="m-chg">--</div></div>
     </div>
   </div>
 
@@ -181,35 +185,12 @@
 
     function updateTimeAgo() {
       const dateEl = document.getElementById("date");
-      if (!lastFetchTimestamp) {
-        dateEl.textContent = "-";
-        return;
-      }
-      const now = new Date();
-      const diffSec = Math.floor((now - lastFetchTimestamp) / 1000);
-      if (diffSec < 60) {
-        dateEl.textContent = "방금 전";
-      } else {
-        const diffMin = Math.floor(diffSec / 60);
-        dateEl.textContent = `${diffMin}분 전`;
-      }
+      if (!lastFetchTimestamp) return;
+      const diffSec = Math.floor((new Date() - lastFetchTimestamp) / 1000);
+      if (diffSec < 60) dateEl.textContent = "방금 전";
+      else dateEl.textContent = `${Math.floor(diffSec / 60)}분 전`;
     }
-
     setInterval(updateTimeAgo, 10000);
-
-    function formatChange(val, chg, pct, options = {}) {
-      const sign = chg > 0 ? "+" : "";
-      const cls = chg > 0 ? "up" : chg < 0 ? "down" : "flat";
-      const prefix = options.isCurrency ? "₩" : options.isDollar ? "$" : "";
-      const suffix = options.isRate ? "%" : "";
-      const digits = options.digits !== undefined ? options.digits : 2;
-
-      return {
-        valStr: `${prefix}${val.toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits})}${suffix}`,
-        chgStr: `${sign}${chg.toFixed(digits)} (${sign}${pct.toFixed(2)}%)`,
-        cls: cls
-      };
-    }
 
     function getRatingDetails(score) {
       if (score < 25) return { text: "극단적 공포", cls: "extreme-fear" };
@@ -219,7 +200,7 @@
       return { text: "극단적 탐욕", cls: "extreme-greed" };
     }
 
-    function calculatePointerPosition(score) {
+    function calcPointer(score) {
       if (score <= 0) return 0;
       if (score >= 100) return 100;
       if (score < 25) return (score / 25) * 20;
@@ -230,307 +211,69 @@
     }
 
     function getCustomStatus(id, val) {
-      if (id === "vix") {
-        if (val <= 12) return { text: "안정", cls: "st-safe" };
-        if (val < 20) return { text: "보통", cls: "st-normal" };
-        return { text: "위험", cls: "st-danger" };
-      }
-      if (id === "tnx") {
-        if (val <= 3.8) return { text: "낮음", cls: "st-safe" };
-        if (val < 4.2) return { text: "보통", cls: "st-normal" };
-        return { text: "위험", cls: "st-danger" };
-      }
-      if (id === "usdkrw") {
-        if (val <= 1300) return { text: "낮음", cls: "st-safe" };
-        if (val < 1420) return { text: "보통", cls: "st-normal" };
-        return { text: "높음", cls: "st-danger" };
-      }
-      if (id === "wti") {
-        if (val <= 65) return { text: "낮음", cls: "st-safe" };
-        if (val < 80) return { text: "보통", cls: "st-normal" };
-        return { text: "높음", cls: "st-danger" };
-      }
+      if (id === "vix") { if(val<=12) return {t:"안정",c:"st-safe"}; if(val<20) return {t:"보통",c:"st-normal"}; return {t:"위험",c:"st-danger"}; }
+      if (id === "tnx") { if(val<=3.8) return {t:"낮음",c:"st-safe"}; if(val<4.2) return {t:"보통",c:"st-normal"}; return {t:"위험",c:"st-danger"}; }
+      if (id === "usdkrw") { if(val<=1300) return {t:"낮음",c:"st-safe"}; if(val<1420) return {t:"보통",c:"st-normal"}; return {t:"높음",c:"st-danger"}; }
+      if (id === "wti") { if(val<=65) return {t:"낮음",c:"st-safe"}; if(val<80) return {t:"보통",c:"st-normal"}; return {t:"높음",c:"st-danger"}; }
       return null;
     }
 
-    function calculateRSI(closes, period = 14) {
-      if (!closes || closes.length < period + 1) return "--";
-      let gains = 0, losses = 0;
-      for (let i = 1; i <= period; i++) {
-        const change = closes[i] - closes[i - 1];
-        if (change >= 0) gains += change;
-        else losses -= change;
+    function updateDOM(id, dataObj, opts = {}) {
+      if (!dataObj) return;
+      const prefix = opts.cur ? "₩" : opts.dol ? "$" : "";
+      const suffix = opts.pct ? "%" : "";
+      const sign = dataObj.chg > 0 ? "+" : "";
+      const cls = dataObj.chg > 0 ? "up" : dataObj.chg < 0 ? "down" : "flat";
+      
+      const valEl = document.getElementById(`${id}-val`);
+      const chgEl = document.getElementById(`${id}-chg`);
+      if(valEl) valEl.textContent = `${prefix}${dataObj.price.toLocaleString(undefined, {minimumFractionDigits:opts.dig??2, maximumFractionDigits:opts.dig??2})}${suffix}`;
+      if(chgEl) {
+        chgEl.textContent = `${sign}${dataObj.chg.toFixed(opts.dig??2)} (${sign}${dataObj.chg_pct.toFixed(2)}%)`;
+        chgEl.className = `m-chg ${cls}`;
       }
-      let avgGain = gains / period, avgLoss = losses / period;
-      for (let i = period + 1; i < closes.length; i++) {
-        const change = closes[i] - closes[i - 1];
-        if (change >= 0) {
-          avgGain = (avgGain * (period - 1) + change) / period;
-          avgLoss = (avgLoss * (period - 1)) / period;
-        } else {
-          avgGain = (avgGain * (period - 1)) / period;
-          avgLoss = (avgLoss * (period - 1) - change) / period;
-        }
+      
+      const stEl = document.getElementById(`${id}-st`);
+      if(stEl) {
+        const st = getCustomStatus(id, dataObj.price);
+        if(st) { stEl.textContent = st.t; stEl.className = `status-badge ${st.c}`; }
       }
-      if (avgLoss === 0) return 100;
-      const rs = avgGain / avgLoss;
-      return (100 - (100 / (1 + rs))).toFixed(1);
-    }
-
-    // CORS 우회 서버 목록 (3중 순차 시도)
-    async function fetchWithProxies(targetUrl) {
-      const proxies = [
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-        `https://thingproxy.freeboard.io/fetch/${targetUrl}`
-      ];
-
-      for (const proxyUrl of proxies) {
-        try {
-          const res = await fetch(proxyUrl);
-          if (res.ok) {
-            const text = await res.text();
-            try {
-              return JSON.parse(text);
-            } catch (e) {}
-          }
-        } catch (e) {}
-      }
-      return null;
-    }
-
-    async function fetchMarketData() {
-      const symbols = [
-        "QQQ", "SPY", "SOXX", "^VIX", "^VXN", "TLT", "HYG", "LQD", "^GSPC", "^IXIC", 
-        "KRW=X", "CL=F", "BZ=F", "^TNX", "BTC-USD", "GC=F",
-        "^KS11", "^KQ11", "005930.KS", "000660.KS"
-      ];
-
-      const fetchSymbol = async (s) => {
-        const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(s)}?range=1y&interval=1d`;
-        const json = await fetchWithProxies(yahooUrl);
-        if (json && json.chart && json.chart.result && json.chart.result[0]) {
-          return { symbol: s, data: json.chart.result[0] };
-        }
-        return null;
-      };
-
-      const results = await Promise.all(symbols.map(fetchSymbol));
-      const dataMap = {};
-      results.forEach(item => { if (item && item.data) dataMap[item.symbol] = item.data; });
-      return dataMap;
-    }
-
-    async function fetchCNNIndex() {
-      const cnnUrl = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata";
-      const json = await fetchWithProxies(cnnUrl);
-      if (json && json.fear_and_greed && json.fear_and_greed.score !== undefined) {
-        return Math.round(json.fear_and_greed.score);
-      }
-      return null;
-    }
-
-    function percentileRank(arr, val) {
-      let count = 0;
-      for (let x of arr) if (x <= val) count++;
-      return (count / arr.length) * 100;
+      
+      const rsiEl = document.getElementById(`${id}-rsi`);
+      if(rsiEl && dataObj.rsi) rsiEl.textContent = `RSI(14): ${dataObj.rsi}`;
     }
 
     async function initDashboard() {
-      const nasdaqScoreEl = document.getElementById("nasdaq-score");
-      const nasdaqRatingEl = document.getElementById("nasdaq-rating");
-      const pointerEl = document.getElementById("pointer");
-      const cnnScoreEl = document.getElementById("cnn-score");
-      const cnnRatingEl = document.getElementById("cnn-rating");
-      const cnnPointerEl = document.getElementById("cnn-pointer");
-
-      nasdaqScoreEl.textContent = "--";
-      nasdaqRatingEl.textContent = "계산 중...";
-      cnnScoreEl.textContent = "--";
-      cnnRatingEl.textContent = "불러오는 중...";
-
       try {
-        const marketData = await fetchMarketData();
-        lastFetchTimestamp = new Date();
+        const res = await fetch(`data.json?v=${new Date().getTime()}`);
+        const data = await res.json();
+        
+        lastFetchTimestamp = new Date(data.timestamp);
         updateTimeAgo();
 
-        // 1. 보조지표 업데이트
-        const indicators = [
-          { id: "vix", key: "^VIX" },
-          { id: "tnx", key: "^TNX", opts: { isRate: true } },
-          { id: "usdkrw", key: "KRW=X", opts: { isCurrency: true } },
-          { id: "wti", key: "CL=F", opts: { isDollar: true } }
-        ];
+        // F&G 업데이트
+        const cnnData = getRatingDetails(data.cnn_fg);
+        document.getElementById("cnn-score").textContent = data.cnn_fg;
+        document.getElementById("cnn-rating").textContent = cnnData.text;
+        document.getElementById("cnn-rating").className = `rating-badge ${cnnData.cls}`;
+        document.getElementById("cnn-pointer").style.left = `${calcPointer(data.cnn_fg)}%`;
 
-        indicators.forEach(ind => {
-          const d = marketData[ind.key];
-          if (d && d.indicators && d.indicators.quote[0].close) {
-            const closes = d.indicators.quote[0].close.filter(c => c !== null);
-            if (closes.length >= 2) {
-              const curr = closes[closes.length - 1];
-              const prev = closes[closes.length - 2];
-              const chg = curr - prev;
-              const pct = (chg / prev) * 100;
-              const formatted = formatChange(curr, chg, pct, ind.opts || {});
-              
-              const valEl = document.getElementById(`${ind.id}-val`);
-              const chgEl = document.getElementById(`${ind.id}-chg`);
-              if (valEl && chgEl) {
-                valEl.textContent = formatted.valStr;
-                chgEl.textContent = formatted.chgStr;
-                chgEl.className = `m-chg ${formatted.cls}`;
-              }
-              const stEl = document.getElementById(`${ind.id}-st`);
-              if (stEl) {
-                const status = getCustomStatus(ind.id, curr);
-                if (status) {
-                  stEl.textContent = status.text;
-                  stEl.className = `status-badge ${status.cls}`;
-                }
-              }
-            }
-          }
-        });
+        const nasData = getRatingDetails(data.nasdaq_fg);
+        document.getElementById("nasdaq-score").textContent = data.nasdaq_fg;
+        document.getElementById("nasdaq-rating").textContent = nasData.text;
+        document.getElementById("nasdaq-rating").className = `rating-badge ${nasData.cls}`;
+        document.getElementById("nasdaq-pointer").style.left = `${calcPointer(data.nasdaq_fg)}%`;
 
-        // 2. 주요 미국 ETF 업데이트
-        [{ id: "spy", key: "SPY" }, { id: "qqq", key: "QQQ" }, { id: "soxx", key: "SOXX" }].forEach(item => {
-          const d = marketData[item.key];
-          if (d && d.indicators && d.indicators.quote[0].close) {
-            const closes = d.indicators.quote[0].close.filter(c => c !== null);
-            if (closes.length >= 2) {
-              const curr = closes[closes.length - 1];
-              const prev = closes[closes.length - 2];
-              const chg = curr - prev;
-              const pct = (chg / prev) * 100;
-              const formatted = formatChange(curr, chg, pct, { isDollar: true });
-              const rsiVal = calculateRSI(closes, 14);
-
-              document.getElementById(`etf-${item.id}-val`).textContent = formatted.valStr;
-              const chgEl = document.getElementById(`etf-${item.id}-chg`);
-              chgEl.textContent = formatted.chgStr;
-              chgEl.className = `m-chg ${formatted.cls}`;
-              document.getElementById(`etf-${item.id}-rsi`).textContent = `RSI(14): ${rsiVal}`;
-            }
-          }
-        });
-
-        // 3. 국내증시 & 주요종목 업데이트
-        [
-          { id: "kospi", key: "^KS11", opts: {} },
-          { id: "kosdaq", key: "^KQ11", opts: {} },
-          { id: "samsung", key: "005930.KS", opts: { isCurrency: true, digits: 0 } },
-          { id: "skhynix", key: "000660.KS", opts: { isCurrency: true, digits: 0 } }
-        ].forEach(item => {
-          const d = marketData[item.key];
-          if (d && d.indicators && d.indicators.quote[0].close) {
-            const closes = d.indicators.quote[0].close.filter(c => c !== null);
-            if (closes.length >= 2) {
-              const curr = closes[closes.length - 1];
-              const prev = closes[closes.length - 2];
-              const chg = curr - prev;
-              const pct = (chg / prev) * 100;
-              const formatted = formatChange(curr, chg, pct, item.opts);
-
-              document.getElementById(`kr-${item.id}-val`).textContent = formatted.valStr;
-              const chgEl = document.getElementById(`kr-${item.id}-chg`);
-              chgEl.textContent = formatted.chgStr;
-              chgEl.className = `m-chg ${formatted.cls}`;
-            }
-          }
-        });
-
-        // 4. 나스닥 공포탐욕지수 자체 계산
-        if (marketData["QQQ"] && marketData["^VXN"] && marketData["TLT"] && marketData["HYG"] && marketData["LQD"]) {
-          const qqqCloses = marketData["QQQ"].indicators.quote[0].close.filter(c => c !== null);
-          const vxnCloses = marketData["^VXN"].indicators.quote[0].close.filter(c => c !== null);
-          const tltCloses = marketData["TLT"].indicators.quote[0].close.filter(c => c !== null);
-          const hygCloses = marketData["HYG"].indicators.quote[0].close.filter(c => c !== null);
-          const lqdCloses = marketData["LQD"].indicators.quote[0].close.filter(c => c !== null);
-
-          const len = qqqCloses.length;
-          const currentQQQ = qqqCloses[len - 1];
-          const sma125 = qqqCloses.slice(-125).reduce((a,b)=>a+b,0) / 125;
-          const momValue = (currentQQQ - sma125) / sma125;
-          let momHist = [];
-          for (let i = Math.max(125, len - 252); i < len; i++) {
-            let sub = qqqCloses.slice(i - 125, i);
-            let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
-            momHist.push((qqqCloses[i] - avg) / avg);
-          }
-          const scoreMom = percentileRank(momHist, momValue);
-
-          const qqq252 = qqqCloses.slice(-252);
-          const scoreStrength = ((currentQQQ - Math.min(...qqq252)) / (Math.max(...qqq252) - Math.min(...qqq252))) * 100;
-
-          const currentVXN = vxnCloses[vxnCloses.length - 1];
-          const vxnSma50 = vxnCloses.slice(-50).reduce((a,b)=>a+b,0) / 50;
-          const volDiff = currentVXN - vxnSma50;
-          let volHist = [];
-          for (let i = Math.max(50, vxnCloses.length - 252); i < vxnCloses.length; i++) {
-            let sub = vxnCloses.slice(i - 50, i);
-            let avg = sub.reduce((a,b)=>a+b,0) / sub.length;
-            volHist.push(vxnCloses[i] - avg);
-          }
-          const scoreVol = 100 - percentileRank(volHist, volDiff);
-
-          const vxnChg20 = (currentVXN - vxnCloses[vxnCloses.length - 21]) / vxnCloses[vxnCloses.length - 21];
-          let vxnChgHist = [];
-          for (let i = Math.max(21, vxnCloses.length - 252); i < vxnCloses.length; i++) {
-            vxnChgHist.push((vxnCloses[i] - vxnCloses[i - 20]) / vxnCloses[i - 20]);
-          }
-          const scoreOption = 100 - percentileRank(vxnChgHist, vxnChg20);
-
-          const qqqRet20 = (currentQQQ - qqqCloses[len - 21]) / qqqCloses[len - 21];
-          const tltRet20 = (tltCloses[tltCloses.length - 1] - tltCloses[tltCloses.length - 21]) / tltCloses[tltCloses.length - 21];
-          const safeSpread = qqqRet20 - tltRet20;
-          let safeHist = [];
-          const minL = Math.min(len, tltCloses.length);
-          for (let i = Math.max(21, minL - 252); i < minL; i++) {
-            safeHist.push(((qqqCloses[i]-qqqCloses[i-20])/qqqCloses[i-20]) - ((tltCloses[i]-tltCloses[i-20])/tltCloses[i-20]));
-          }
-          const scoreSafe = percentileRank(safeHist, safeSpread);
-
-          const hygRet20 = (hygCloses[hygCloses.length - 1] - hygCloses[hygCloses.length - 21]) / hygCloses[hygCloses.length - 21];
-          const lqdRet20 = (lqdCloses[lqdCloses.length - 1] - lqdCloses[lqdCloses.length - 21]) / lqdCloses[lqdCloses.length - 21];
-          const junkSpread = hygRet20 - lqdRet20;
-          let junkHist = [];
-          const minB = Math.min(hygCloses.length, lqdCloses.length);
-          for (let i = Math.max(21, minB - 252); i < minB; i++) {
-            junkHist.push(((hygCloses[i]-hygCloses[i-20])/hygCloses[i-20]) - ((lqdCloses[i]-lqdCloses[i-20])/lqdCloses[i-20]));
-          }
-          const scoreJunk = percentileRank(junkHist, junkSpread);
-
-          const subScores = [scoreMom, scoreStrength, scoreVol, scoreOption, scoreSafe, scoreJunk];
-          const overallScore = Math.round(subScores.reduce((a,b)=>a+b,0) / subScores.length);
-
-          nasdaqScoreEl.textContent = overallScore;
-          pointerEl.style.left = `${calculatePointerPosition(overallScore)}%`;
-
-          const details = getRatingDetails(overallScore);
-          nasdaqRatingEl.textContent = details.text;
-          nasdaqRatingEl.className = `rating-badge ${details.cls}`;
-        }
-
-        // 5. CNN 지수 업데이트
-        const cnnScore = await fetchCNNIndex();
-        if (cnnScore !== null) {
-          cnnScoreEl.textContent = cnnScore;
-          cnnPointerEl.style.left = `${calculatePointerPosition(cnnScore)}%`;
-          const cnnDetails = getRatingDetails(cnnScore);
-          cnnRatingEl.textContent = cnnDetails.text;
-          cnnRatingEl.className = `rating-badge ${cnnDetails.cls}`;
-        } else {
-          // 백업: CNN 직접 조회가 전부 실패한 경우 자체 계산 점수 기반 연동
-          const fallbackScore = nasdaqScoreEl.textContent !== "--" ? parseInt(nasdaqScoreEl.textContent) : 50;
-          cnnScoreEl.textContent = fallbackScore;
-          cnnPointerEl.style.left = `${calculatePointerPosition(fallbackScore)}%`;
-          const fallbackDetails = getRatingDetails(fallbackScore);
-          cnnRatingEl.textContent = fallbackDetails.text;
-          cnnRatingEl.className = `rating-badge ${fallbackDetails.cls}`;
-        }
+        // 마켓 데이터 매핑
+        const md = data.market;
+        updateDOM("vix", md["^VIX"]); updateDOM("tnx", md["^TNX"], {pct:true}); updateDOM("usdkrw", md["KRW=X"], {cur:true, dig:1}); updateDOM("wti", md["CL=F"], {dol:true});
+        updateDOM("spy", md["SPY"], {dol:true}); updateDOM("qqq", md["QQQ"], {dol:true}); updateDOM("soxx", md["SOXX"], {dol:true});
+        updateDOM("kospi", md["^KS11"]); updateDOM("kosdaq", md["^KQ11"]); updateDOM("samsung", md["005930.KS"], {cur:true, dig:0}); updateDOM("skhynix", md["000660.KS"], {cur:true, dig:0});
+        updateDOM("sp500", md["^GSPC"]); updateDOM("nasdaqidx", md["^IXIC"]); updateDOM("vxn", md["^VXN"]);
+        updateDOM("btc", md["BTC-USD"], {dol:true, dig:0}); updateDOM("gold", md["GC=F"], {dol:true}); updateDOM("brent", md["BZ=F"], {dol:true});
 
       } catch (e) {
-        console.error(e);
+        console.error("데이터 로드 실패:", e);
       }
     }
 
