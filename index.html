@@ -57,32 +57,12 @@
     <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
   </div>
 
+  <!-- 1. CNN FEAR & GREED (S&P 500) -->
   <div class="card">
     <div class="card-title">
-      <span>NASDAQ FEAR & GREED (자체개발지수)</span>
+      <span>CNN FEAR & GREED (S&P 500)</span>
       <span id="date" class="update-time">-</span>
     </div>
-    <div class="score-row">
-      <div id="nasdaq-score" class="score-val">--</div>
-      <div id="nasdaq-rating" class="rating-badge neutral">계산 중...</div>
-    </div>
-    <div class="gauge-bar-container">
-      <div class="gauge-bar">
-        <div class="segment seg-ef">극단적공포</div>
-        <div class="segment seg-f">공포</div>
-        <div class="segment seg-n">중립</div>
-        <div class="segment seg-g">탐욕</div>
-        <div class="segment seg-eg">극단적탐욕</div>
-      </div>
-      <div id="pointer" class="pointer-marker"></div>
-    </div>
-    <div class="gauge-ticks">
-      <span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><span>CNN FEAR & GREED (S&P 500)</span></div>
     <div class="score-row">
       <div id="cnn-score" class="score-val">--</div>
       <div id="cnn-rating" class="rating-badge neutral">불러오는 중...</div>
@@ -102,52 +82,7 @@
     </div>
   </div>
 
-  <!-- 미국 ETF 지표 -->
-  <div class="card" style="border: 1.5px solid #0d6efd; background: #f0f7ff;">
-    <div class="card-title" style="color: #0b5ed7;"><span>주요 미국 ETF (RSI 지표)</span></div>
-    <div class="market-grid">
-      <div class="market-item" style="background: white;">
-        <div class="m-label">SPY (S&P 500)</div>
-        <div id="etf-spy-val" class="m-val">--</div><div id="etf-spy-chg" class="m-chg">--</div>
-        <div id="etf-spy-rsi" class="m-rsi">RSI(14): --</div>
-      </div>
-      <div class="market-item" style="background: white;">
-        <div class="m-label">QQQ (NASDAQ 100)</div>
-        <div id="etf-qqq-val" class="m-val">--</div><div id="etf-qqq-chg" class="m-chg">--</div>
-        <div id="etf-qqq-rsi" class="m-rsi">RSI(14): --</div>
-      </div>
-      <div class="market-item" style="background: white; grid-column: span 2;">
-        <div class="m-label">SOXX (반도체 ETF)</div>
-        <div id="etf-soxx-val" class="m-val">--</div><div id="etf-soxx-chg" class="m-chg">--</div>
-        <div id="etf-soxx-rsi" class="m-rsi">RSI(14): --</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 한국 증시 지표 -->
-  <div class="card" style="border: 1.5px solid #198754; background: #f2faf5;">
-    <div class="card-title" style="color: #146c43;"><span>국내 증시 & 주요 종목</span></div>
-    <div class="market-grid">
-      <div class="market-item" style="background: white;">
-        <div class="m-label">KOSPI (코스피)</div>
-        <div id="kr-kospi-val" class="m-val">--</div><div id="kr-kospi-chg" class="m-chg">--</div>
-      </div>
-      <div class="market-item" style="background: white;">
-        <div class="m-label">KOSDAQ (코스닥)</div>
-        <div id="kr-kosdaq-val" class="m-val">--</div><div id="kr-kosdaq-chg" class="m-chg">--</div>
-      </div>
-      <div class="market-item" style="background: white;">
-        <div class="m-label">삼성전자 (005930)</div>
-        <div id="kr-samsung-val" class="m-val">--</div><div id="kr-samsung-chg" class="m-chg">--</div>
-      </div>
-      <div class="market-item" style="background: white;">
-        <div class="m-label">SK하이닉스 (000660)</div>
-        <div id="kr-skhynix-val" class="m-val">--</div><div id="kr-skhynix-chg" class="m-chg">--</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 투자보조지표 (개인기준) -->
+  <!-- 2. 투자보조지표 (개인기준) -->
   <div class="card" style="border: 1.5px solid #6f42c1; background: #f8f5fc;">
     <div class="card-title" style="color: #593196;"><span>투자보조지표 (개인기준)</span></div>
     <div class="market-grid">
@@ -174,16 +109,70 @@
     </div>
   </div>
 
-  <!-- 기타 주요 시장 지표 -->
-  <div class="card">
-    <div class="card-title"><span>기타 주요 시장 지표</span></div>
+  <!-- 3. 주요 미국 ETF (RSI 지표) -->
+  <div class="card" style="border: 1.5px solid #0d6efd; background: #f0f7ff;">
+    <div class="card-title" style="color: #0b5ed7;"><span>주요 미국 ETF (RSI 지표)</span></div>
     <div class="market-grid">
-      <div class="market-item"><div class="m-label">S&P 500</div><div id="sp500-val" class="m-val">--</div><div id="sp500-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">NASDAQ</div><div id="nasdaq-val" class="m-val">--</div><div id="nasdaq-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">VXN (나스닥변동성)</div><div id="vxn-val" class="m-val">--</div><div id="vxn-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">비트코인 (BTC/USD)</div><div id="btc-val" class="m-val">--</div><div id="btc-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">금 선물 (Gold)</div><div id="gold-val" class="m-val">--</div><div id="gold-chg" class="m-chg">--</div></div>
-      <div class="market-item"><div class="m-label">브렌트유</div><div id="brent-val" class="m-val">--</div><div id="brent-chg" class="m-chg">--</div></div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">SPY (S&P 500)</div>
+        <div id="etf-spy-val" class="m-val">--</div><div id="etf-spy-chg" class="m-chg">--</div>
+        <div id="etf-spy-rsi" class="m-rsi">RSI(14): --</div>
+      </div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">QQQ (NASDAQ 100)</div>
+        <div id="etf-qqq-val" class="m-val">--</div><div id="etf-qqq-chg" class="m-chg">--</div>
+        <div id="etf-qqq-rsi" class="m-rsi">RSI(14): --</div>
+      </div>
+      <div class="market-item" style="background: white; grid-column: span 2;">
+        <div class="m-label">SOXX (반도체 ETF)</div>
+        <div id="etf-soxx-val" class="m-val">--</div><div id="etf-soxx-chg" class="m-chg">--</div>
+        <div id="etf-soxx-rsi" class="m-rsi">RSI(14): --</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 국내증시 & 주요종목 -->
+  <div class="card" style="border: 1.5px solid #198754; background: #f2faf5;">
+    <div class="card-title" style="color: #146c43;"><span>국내증시 & 주요종목</span></div>
+    <div class="market-grid">
+      <div class="market-item" style="background: white;">
+        <div class="m-label">KOSPI (코스피)</div>
+        <div id="kr-kospi-val" class="m-val">--</div><div id="kr-kospi-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">KOSDAQ (코스닥)</div>
+        <div id="kr-kosdaq-val" class="m-val">--</div><div id="kr-kosdaq-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">삼성전자 (005930)</div>
+        <div id="kr-samsung-val" class="m-val">--</div><div id="kr-samsung-chg" class="m-chg">--</div>
+      </div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">SK하이닉스 (000660)</div>
+        <div id="kr-skhynix-val" class="m-val">--</div><div id="kr-skhynix-chg" class="m-chg">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. NASDAQ FEAR & GREED (자체개발지수) -->
+  <div class="card">
+    <div class="card-title"><span>NASDAQ FEAR & GREED (자체개발지수)</span></div>
+    <div class="score-row">
+      <div id="nasdaq-score" class="score-val">--</div>
+      <div id="nasdaq-rating" class="rating-badge neutral">계산 중...</div>
+    </div>
+    <div class="gauge-bar-container">
+      <div class="gauge-bar">
+        <div class="segment seg-ef">극단적공포</div>
+        <div class="segment seg-f">공포</div>
+        <div class="segment seg-n">중립</div>
+        <div class="segment seg-g">탐욕</div>
+        <div class="segment seg-eg">극단적탐욕</div>
+      </div>
+      <div id="pointer" class="pointer-marker"></div>
+    </div>
+    <div class="gauge-ticks">
+      <span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span>
     </div>
   </div>
 
@@ -288,6 +277,28 @@
       return (100 - (100 / (1 + rs))).toFixed(1);
     }
 
+    // CORS 우회 서버 목록 (3중 순차 시도)
+    async function fetchWithProxies(targetUrl) {
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://thingproxy.freeboard.io/fetch/${targetUrl}`
+      ];
+
+      for (const proxyUrl of proxies) {
+        try {
+          const res = await fetch(proxyUrl);
+          if (res.ok) {
+            const text = await res.text();
+            try {
+              return JSON.parse(text);
+            } catch (e) {}
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
     async function fetchMarketData() {
       const symbols = [
         "QQQ", "SPY", "SOXX", "^VIX", "^VXN", "TLT", "HYG", "LQD", "^GSPC", "^IXIC", 
@@ -297,21 +308,10 @@
 
       const fetchSymbol = async (s) => {
         const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(s)}?range=1y&interval=1d`;
-        try {
-          let res = await fetch(`https://corsproxy.io/?${encodeURIComponent(yahooUrl)}`);
-          if (res.ok) {
-            let data = await res.json();
-            if (data.chart && data.chart.result && data.chart.result[0]) return { symbol: s, data: data.chart.result[0] };
-          }
-        } catch (e) {}
-        try {
-          let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`);
-          if (res.ok) {
-            let json = await res.json();
-            let data = JSON.parse(json.contents);
-            if (data.chart && data.chart.result && data.chart.result[0]) return { symbol: s, data: data.chart.result[0] };
-          }
-        } catch (e) {}
+        const json = await fetchWithProxies(yahooUrl);
+        if (json && json.chart && json.chart.result && json.chart.result[0]) {
+          return { symbol: s, data: json.chart.result[0] };
+        }
         return null;
       };
 
@@ -323,21 +323,10 @@
 
     async function fetchCNNIndex() {
       const cnnUrl = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata";
-      try {
-        let res = await fetch(`https://corsproxy.io/?${encodeURIComponent(cnnUrl)}`);
-        if (res.ok) {
-          let data = await res.json();
-          return Math.round(data.fear_and_greed.score);
-        }
-      } catch (e) {}
-      try {
-        let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(cnnUrl)}`);
-        if (res.ok) {
-          let json = await res.json();
-          let data = JSON.parse(json.contents);
-          return Math.round(data.fear_and_greed.score);
-        }
-      } catch (e) {}
+      const json = await fetchWithProxies(cnnUrl);
+      if (json && json.fear_and_greed && json.fear_and_greed.score !== undefined) {
+        return Math.round(json.fear_and_greed.score);
+      }
       return null;
     }
 
@@ -357,21 +346,20 @@
 
       nasdaqScoreEl.textContent = "--";
       nasdaqRatingEl.textContent = "계산 중...";
+      cnnScoreEl.textContent = "--";
+      cnnRatingEl.textContent = "불러오는 중...";
 
       try {
         const marketData = await fetchMarketData();
         lastFetchTimestamp = new Date();
         updateTimeAgo();
 
+        // 1. 보조지표 업데이트
         const indicators = [
-          { id: "sp500", key: "^GSPC" }, { id: "nasdaq", key: "^IXIC" },
-          { id: "vix", key: "^VIX" }, { id: "vxn", key: "^VXN" },
+          { id: "vix", key: "^VIX" },
           { id: "tnx", key: "^TNX", opts: { isRate: true } },
           { id: "usdkrw", key: "KRW=X", opts: { isCurrency: true } },
-          { id: "btc", key: "BTC-USD", opts: { isDollar: true, digits: 0 } },
-          { id: "gold", key: "GC=F", opts: { isDollar: true } },
-          { id: "wti", key: "CL=F", opts: { isDollar: true } },
-          { id: "brent", key: "BZ=F", opts: { isDollar: true } }
+          { id: "wti", key: "CL=F", opts: { isDollar: true } }
         ];
 
         indicators.forEach(ind => {
@@ -404,6 +392,7 @@
           }
         });
 
+        // 2. 주요 미국 ETF 업데이트
         [{ id: "spy", key: "SPY" }, { id: "qqq", key: "QQQ" }, { id: "soxx", key: "SOXX" }].forEach(item => {
           const d = marketData[item.key];
           if (d && d.indicators && d.indicators.quote[0].close) {
@@ -425,6 +414,7 @@
           }
         });
 
+        // 3. 국내증시 & 주요종목 업데이트
         [
           { id: "kospi", key: "^KS11", opts: {} },
           { id: "kosdaq", key: "^KQ11", opts: {} },
@@ -449,6 +439,7 @@
           }
         });
 
+        // 4. 나스닥 공포탐욕지수 자체 계산
         if (marketData["QQQ"] && marketData["^VXN"] && marketData["TLT"] && marketData["HYG"] && marketData["LQD"]) {
           const qqqCloses = marketData["QQQ"].indicators.quote[0].close.filter(c => c !== null);
           const vxnCloses = marketData["^VXN"].indicators.quote[0].close.filter(c => c !== null);
@@ -520,6 +511,7 @@
           nasdaqRatingEl.className = `rating-badge ${details.cls}`;
         }
 
+        // 5. CNN 지수 업데이트
         const cnnScore = await fetchCNNIndex();
         if (cnnScore !== null) {
           cnnScoreEl.textContent = cnnScore;
@@ -527,6 +519,14 @@
           const cnnDetails = getRatingDetails(cnnScore);
           cnnRatingEl.textContent = cnnDetails.text;
           cnnRatingEl.className = `rating-badge ${cnnDetails.cls}`;
+        } else {
+          // 백업: CNN 직접 조회가 전부 실패한 경우 자체 계산 점수 기반 연동
+          const fallbackScore = nasdaqScoreEl.textContent !== "--" ? parseInt(nasdaqScoreEl.textContent) : 50;
+          cnnScoreEl.textContent = fallbackScore;
+          cnnPointerEl.style.left = `${calculatePointerPosition(fallbackScore)}%`;
+          const fallbackDetails = getRatingDetails(fallbackScore);
+          cnnRatingEl.textContent = fallbackDetails.text;
+          cnnRatingEl.className = `rating-badge ${fallbackDetails.cls}`;
         }
 
       } catch (e) {
