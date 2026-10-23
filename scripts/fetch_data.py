@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import json
 import requests
+import time
 from datetime import datetime, timezone
 
 def calc_rsi(series, period=14):
@@ -18,22 +19,54 @@ def fetch_cnn_fg():
         'Accept': 'application/json',
         'Referer': 'https://edition.cnn.com/'
     }
+    
     try:
-        r = requests.get(url, headers=headers, timeout=10)
+        r = requests.get(url, headers=headers, timeout=5)
         if r.status_code == 200:
             return int(r.json()['fear_and_greed']['score'])
     except:
         pass
     
     try:
-        proxy_url = "https://api.allorigins.win/raw?url=" + url
+        # 프록시 서버 캐시 강제 무력화 (매번 새로운 데이터 수집)
+        proxy_url = f"https://api.allorigins.win/raw?url={url}&cb={int(time.time())}"
         r = requests.get(proxy_url, timeout=10)
         if r.status_code == 200:
             return int(r.json()['fear_and_greed']['score'])
     except:
         pass
     
-    return None # 실패 시 임의의 값(50)을 넣지 않고 데이터 없음을 명시
+    return None
+
+def fetch_naver_market_data(code, is_index=False):
+    type_str = "index" if is_index else "stock"
+    url = f"https://m.stock.naver.com/api/{type_str}/{code}/basic"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    
+    try:
+        r = requests.get(url, headers=headers, timeout=5)
+        data = r.json()
+        
+        price = float(data['closePrice'].replace(',', ''))
+        chg = float(data['compareToPreviousClosePrice'].replace(',', ''))
+        pct = float(data['fluctuationsRatio'].replace(',', ''))
+
+        if pct < 0 and chg > 0:
+            chg = -chg
+        elif pct > 0 and chg < 0:
+            chg = abs(chg)
+        elif pct == 0:
+            chg = 0.0
+
+        return {
+            "price": price,
+            "chg": chg,
+            "chg_pct": pct,
+            "rsi": None
+        }
+    except Exception as e:
+        print(f"Naver fetch failed for {code}: {e}")
+        return None
 
 def percentile_rank(arr, val):
     if not arr: return 50
@@ -41,72 +74,93 @@ def percentile_rank(arr, val):
     return (count / len(arr)) * 100
 
 def main():
-    tickers = [
-        "QQQ", "SPY", "SOXX", "^VIX", "^VXN", "TLT", "HYG", "LQD", 
+    yf_tickers = [
+        "QQQ", "SPY", "SOXX", "^SOX", "^VIX", "^VXN", "TLT", "HYG", "LQD", 
         "^GSPC", "^IXIC", "KRW=X", "CL=F", "BZ=F", "^TNX", 
-        "BTC-USD", "GC=F", "^KS11", "^KQ11", "005930.KS", "000660.KS"
+        "BTC-USD", "GC=F"
     ]
     
-    print("Downloading market data...")
-    df = yf.download(tickers, period="2y", interval="1d")['Close']
+    print("Downloading Yahoo Finance data...")
+    session = requests.Session()
+    session.headers.update({'User-Agent': 'Mozilla/5.0'})
     
     market_data = {}
-    for t in tickers:
-        try:
-            if t not in df.columns:
-                continue
-            s = df[t].dropna()
-            if len(s) >= 2:
-                curr = float(s.iloc[-1])
-                prev = float(s.iloc[-2])
-                chg = curr - prev
-                pct = (chg / prev) * 100
-                
-                rsi = None
-                if len(s) >= 15:
-                    rsi_series = calc_rsi(s)
-                    rsi = float(rsi_series.iloc[-1])
-                
-                market_data[t] = {
-                    "price": curr,
-                    "chg": chg,
-                    "chg_pct": pct,
-                    "rsi": round(rsi, 1) if pd.notnull(rsi) else None
-                }
-        except Exception as e:
-            print(f"Error processing {t}: {e}")
-
-    nasdaq_fg = None # 기본값을 None으로 설정하여 실패 시 조회불가 처리
+    
     try:
-        q = df["QQQ"].dropna().tolist()
-        v = df["^VXN"].dropna().tolist()
-        t = df["TLT"].dropna().tolist()
-        h = df["HYG"].dropna().tolist()
-        l = df["LQD"].dropna().tolist()
-        
-        sma125 = sum(q[-125:])/125
-        m_val = (q[-1] - sma125)/sma125
-        s_mom = percentile_rank([(q[i] - sum(q[i-125:i])/125)/(sum(q[i-125:i])/125) for i in range(125, len(q))], m_val)
-        
-        q252 = q[-252:]
-        s_str = ((q[-1] - min(q252)) / (max(q252) - min(q252))) * 100
-        
-        v_sma50 = sum(v[-50:])/50
-        v_diff = v[-1] - v_sma50
-        s_vol = 100 - percentile_rank([v[i] - sum(v[i-50:i])/50 for i in range(50, len(v))], v_diff)
-        
-        v_chg = (v[-1] - v[-21])/v[-21]
-        s_opt = 100 - percentile_rank([(v[i]-v[i-20])/v[i-20] for i in range(21, len(v))], v_chg)
-        
-        safe_val = (q[-1]-q[-21])/q[-21] - (t[-1]-t[-21])/t[-21]
-        min_l = min(len(q), len(t))
-        s_safe = percentile_rank([(q[i]-q[i-20])/q[i-20] - (t[i]-t[i-20])/t[i-20] for i in range(21, min_l)], safe_val)
-        
-        junk_val = (h[-1]-h[-21])/h[-21] - (l[-1]-l[-21])/l[-21]
-        min_b = min(len(h), len(l))
-        s_junk = percentile_rank([(h[i]-h[i-20])/h[i-20] - (l[i]-l[i-20])/l[i-20] for i in range(21, min_b)], junk_val)
-        
-        nasdaq_fg = round((s_mom + s_str + s_vol + s_opt + s_safe + s_junk) / 6)
+        df = yf.download(yf_tickers, period="2y", interval="1d", session=session)['Close']
+        for t in yf_tickers:
+            try:
+                if t not in df.columns:
+                    continue
+                s = df[t].dropna()
+                if len(s) >= 2:
+                    curr = float(s.iloc[-1])
+                    prev = float(s.iloc[-2])
+                    chg = curr - prev
+                    pct = (chg / prev) * 100
+                    
+                    rsi = None
+                    if len(s) >= 15:
+                        rsi_series = calc_rsi(s)
+                        rsi = float(rsi_series.iloc[-1])
+                    
+                    market_data[t] = {
+                        "price": curr,
+                        "chg": chg,
+                        "chg_pct": pct,
+                        "rsi": round(rsi, 1) if pd.notnull(rsi) else None
+                    }
+            except Exception as e:
+                print(f"Error processing Yahoo ticker {t}: {e}")
+    except Exception as e:
+        print(f"Yahoo Data download failed: {e}")
+
+    print("Downloading Naver Finance data (Korea Market)...")
+    naver_items = {
+        "^KS11": ("KOSPI", True),
+        "^KQ11": ("KOSDAQ", True),
+        "005930.KS": ("005930", False),
+        "000660.KS": ("000660", False)
+    }
+    
+    for yf_key, (naver_code, is_idx) in naver_items.items():
+        naver_data = fetch_naver_market_data(naver_code, is_idx)
+        if naver_data:
+            market_data[yf_key] = naver_data
+
+    nasdaq_fg = None
+    try:
+        if 'df' in locals() and all(x in df.columns for x in ["QQQ", "^VXN", "TLT", "HYG", "LQD"]):
+            q = df["QQQ"].dropna().tolist()
+            v = df["^VXN"].dropna().tolist()
+            t = df["TLT"].dropna().tolist()
+            h = df["HYG"].dropna().tolist()
+            l = df["LQD"].dropna().tolist()
+            
+            if len(q) >= 252 and len(v) >= 50:
+                sma125 = sum(q[-125:])/125
+                m_val = (q[-1] - sma125)/sma125
+                s_mom = percentile_rank([(q[i] - sum(q[i-125:i])/125)/(sum(q[i-125:i])/125) for i in range(125, len(q))], m_val)
+                
+                q252 = q[-252:]
+                s_str = ((q[-1] - min(q252)) / (max(q252) - min(q252))) * 100
+                
+                v_sma50 = sum(v[-50:])/50
+                v_diff = v[-1] - v_sma50
+                s_vol = 100 - percentile_rank([v[i] - sum(v[i-50:i])/50 for i in range(50, len(v))], v_diff)
+                
+                v_chg = (v[-1] - v[-21])/v[-21]
+                s_opt = 100 - percentile_rank([(v[i]-v[i-20])/v[i-20] for i in range(21, len(v))], v_chg)
+                
+                safe_val = (q[-1]-q[-21])/q[-21] - (t[-1]-t[-21])/t[-21]
+                min_l = min(len(q), len(t))
+                s_safe = percentile_rank([(q[i]-q[i-20])/q[i-20] - (t[i]-t[i-20])/t[i-20] for i in range(21, min_l)], safe_val)
+                
+                junk_val = (h[-1]-h[-21])/h[-21] - (l[-1]-l[-21])/l[-21]
+                min_b = min(len(h), len(l))
+                s_junk = percentile_rank([(h[i]-h[i-20])/h[i-20] - (l[i]-l[i-20])/l[i-20] for i in range(21, min_b)], junk_val)
+                
+                nasdaq_fg = round((s_mom + s_str + s_vol + s_opt + s_safe + s_junk) / 6)
     except Exception as e:
         print(f"Error calculating Nasdaq FG: {e}")
 
@@ -119,6 +173,8 @@ def main():
     
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
+        
+    print("data.json successfully updated.")
 
 if __name__ == "__main__":
     main()
