@@ -9,7 +9,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; background-color: #f1f3f5; color: #212529; max-width: 500px; margin-left: auto; margin-right: auto; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .header h1 { font-size: 18px; font-weight: 800; margin: 0; color: #111; }
-    .refresh-btn { background: #0d6efd; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .refresh-btn { background: #0d6efd; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
     .time-info { background: #e9ecef; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; color: #6c757d; display: flex; justify-content: space-between; font-weight: 600; }
     .time-info span.time-val { color: #212529; font-weight: 700; margin-left: 4px; }
     .card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; }
@@ -51,7 +51,7 @@
 <body>
   <div class="header">
     <h1>📱 종합 시장 대시보드</h1>
-    <button class="refresh-btn" onclick="initDashboard()">🔄 새로고침</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="initDashboard()">🔄 새로고침</button>
   </div>
 
   <div class="time-info">
@@ -114,10 +114,14 @@
         <div id="qqq-val" class="m-val">--</div><div id="qqq-chg" class="m-chg">--</div>
         <div id="qqq-rsi" class="m-rsi">RSI(14): --</div>
       </div>
-      <div class="market-item" style="background: white; grid-column: span 2;">
+      <div class="market-item" style="background: white;">
         <div class="m-label">SOXX (반도체 ETF)</div>
         <div id="soxx-val" class="m-val">--</div><div id="soxx-chg" class="m-chg">--</div>
         <div id="soxx-rsi" class="m-rsi">RSI(14): --</div>
+      </div>
+      <div class="market-item" style="background: white;">
+        <div class="m-label">필라델피아 반도체 (^SOX)</div>
+        <div id="sox-val" class="m-val">--</div><div id="sox-chg" class="m-chg">--</div>
       </div>
       <div class="market-item" style="background: white;"><div class="m-label">S&P 500 지수</div><div id="sp500-val" class="m-val">--</div><div id="sp500-chg" class="m-chg">--</div></div>
       <div class="market-item" style="background: white;"><div class="m-label">NASDAQ 지수</div><div id="nasdaqidx-val" class="m-val">--</div><div id="nasdaqidx-chg" class="m-chg">--</div></div>
@@ -129,7 +133,7 @@
   </div>
 
   <div class="card" style="border: 1.5px solid #198754; background: #f2faf5;">
-    <div class="card-title" style="color: #146c43;"><span>국내증시 & 주요종목</span></div>
+    <div class="card-title" style="color: #146c43;"><span>국내증시 & 주요종목 (네이버 실시간)</span></div>
     <div class="market-grid">
       <div class="market-item" style="background: white;">
         <div class="m-label">KOSPI (코스피)</div><div id="kospi-val" class="m-val">--</div><div id="kospi-chg" class="m-chg">--</div>
@@ -203,7 +207,7 @@
       const rsiEl = document.getElementById(`${id}-rsi`);
 
       if (!dataObj || dataObj.price === undefined || dataObj.price === null) {
-        if(valEl) { valEl.textContent = "조회불가"; valEl.className = "m-val err-msg"; }
+        if(valEl) { valEl.textContent = "조회실패"; valEl.className = "m-val err-msg"; }
         if(chgEl) { chgEl.textContent = "-"; chgEl.className = "m-chg flat"; }
         if(stEl) { stEl.textContent = "-"; stEl.className = "status-badge st-normal"; }
         if(rsiEl) { rsiEl.textContent = "RSI(14): -"; }
@@ -233,6 +237,11 @@
     }
 
     async function initDashboard() {
+      const btn = document.getElementById('refreshBtn');
+      btn.textContent = "⏳ 업데이트 중...";
+      btn.style.opacity = "0.7";
+      btn.disabled = true;
+
       try {
         const res = await fetch(`data.json?v=${new Date().getTime()}`);
         if (!res.ok) throw new Error("데이터를 찾을 수 없습니다.");
@@ -244,7 +253,7 @@
         }
 
         const lastFetchTimestamp = new Date(data.timestamp);
-        const nextFetchTimestamp = new Date(lastFetchTimestamp.getTime() + 5 * 60000); // 5분 더하기
+        const nextFetchTimestamp = new Date(lastFetchTimestamp.getTime() + 5 * 60000); 
 
         document.getElementById("last-update-time").textContent = formatTime(lastFetchTimestamp);
         document.getElementById("next-update-time").textContent = formatTime(nextFetchTimestamp);
@@ -260,7 +269,7 @@
           cnnPtr.style.display = "block";
           cnnPtr.style.left = `${calcPointer(data.cnn_fg)}%`;
         } else {
-          document.getElementById("cnn-score").textContent = "조회불가";
+          document.getElementById("cnn-score").textContent = "조회실패";
           document.getElementById("cnn-score").style.fontSize = "20px";
           document.getElementById("cnn-score").style.color = "#dc3545";
           document.getElementById("cnn-rating").textContent = "-";
@@ -279,7 +288,7 @@
           nasPtr.style.display = "block";
           nasPtr.style.left = `${calcPointer(data.nasdaq_fg)}%`;
         } else {
-          document.getElementById("nasdaq-score").textContent = "조회불가";
+          document.getElementById("nasdaq-score").textContent = "조회실패";
           document.getElementById("nasdaq-score").style.fontSize = "20px";
           document.getElementById("nasdaq-score").style.color = "#dc3545";
           document.getElementById("nasdaq-rating").textContent = "-";
@@ -289,7 +298,8 @@
 
         const md = data.market;
         updateDOM("vix", md["^VIX"]); updateDOM("tnx", md["^TNX"], {pct:true}); updateDOM("usdkrw", md["KRW=X"], {cur:true, dig:1}); updateDOM("wti", md["CL=F"], {dol:true});
-        updateDOM("spy", md["SPY"], {dol:true}); updateDOM("qqq", md["QQQ"], {dol:true}); updateDOM("soxx", md["SOXX"], {dol:true});
+        updateDOM("spy", md["SPY"], {dol:true}); updateDOM("qqq", md["QQQ"], {dol:true}); updateDOM("soxx", md["SOXX"], {dol:true}); 
+        updateDOM("sox", md["^SOX"]); 
         updateDOM("kospi", md["^KS11"]); updateDOM("kosdaq", md["^KQ11"]); updateDOM("samsung", md["005930.KS"], {cur:true, dig:0}); updateDOM("skhynix", md["000660.KS"], {cur:true, dig:0});
         updateDOM("sp500", md["^GSPC"]); updateDOM("nasdaqidx", md["^IXIC"]); updateDOM("vxn", md["^VXN"]);
         updateDOM("btc", md["BTC-USD"], {dol:true, dig:0}); updateDOM("gold", md["GC=F"], {dol:true}); updateDOM("brent", md["BZ=F"], {dol:true});
@@ -297,6 +307,12 @@
       } catch (e) {
         console.error("데이터 로드 실패:", e);
         document.getElementById("last-update-time").textContent = "연결 오류";
+      } finally {
+        setTimeout(() => {
+          btn.textContent = "🔄 새로고침";
+          btn.style.opacity = "1";
+          btn.disabled = false;
+        }, 500);
       }
     }
 
