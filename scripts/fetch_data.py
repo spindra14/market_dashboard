@@ -3,9 +3,9 @@ import pandas as pd
 import json
 import requests
 import time
+import urllib.parse
 from datetime import datetime, timezone
 
-# 1. RSI 계산 함수
 def calc_rsi(series, period=14):
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
@@ -13,47 +13,48 @@ def calc_rsi(series, period=14):
     rs = gain / loss
     return 100 - (100 / (1 + rs))
 
-# 2. CNN 공포탐욕지수 (캐시 우회 완벽 적용)
 def fetch_cnn_fg():
-    url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+    base_url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json',
-        'Referer': 'https://edition.cnn.com/',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        'Accept': '*/*',
+        'Referer': 'https://edition.cnn.com/'
     }
     
-    # 캐시를 무력화하기 위해 URL 끝에 밀리초 단위 타임스탬프 강제 추가
-    direct_url = f"{url}?_={int(time.time()*1000)}"
+    # 캐시를 완벽히 무력화하기 위해 1밀리초 단위 타임스탬프 생성
+    timestamp = int(time.time() * 1000)
+    target_url = f"{base_url}?_={timestamp}"
     
+    # 1. CNN 다이렉트 호출 시도
     try:
-        r = requests.get(direct_url, headers=headers, timeout=5)
+        r = requests.get(target_url, headers=headers, timeout=5)
         if r.status_code == 200:
             return int(r.json()['fear_and_greed']['score'])
     except:
         pass
     
-    # 우회 프록시 서버 통신 시에도 타임스탬프 강제 추가
+    # 2. 강력한 우회 프록시 1 (CodeTabs)
     try:
-        proxy_url = f"https://api.allorigins.win/raw?url={url}&cb={int(time.time()*1000)}"
-        r = requests.get(proxy_url, timeout=10)
+        proxy_url1 = f"https://api.codetabs.com/v1/proxy?quest={target_url}"
+        r = requests.get(proxy_url1, timeout=10)
         if r.status_code == 200:
             return int(r.json()['fear_and_greed']['score'])
-    except:
-        pass
-    
-    # 예비용 써드파티 API
-    try:
-        r = requests.get("https://fear-and-greed-api.pages.dev/v1/fgi", headers=headers, timeout=5)
-        if r.status_code == 200:
-            return int(r.json()['fgi']['now']['value'])
     except:
         pass
         
+    # 3. 강력한 우회 프록시 2 (AllOrigins) - URL 인코딩 적용
+    try:
+        encoded_url = urllib.parse.quote(target_url, safe='')
+        proxy_url2 = f"https://api.allorigins.win/raw?url={encoded_url}"
+        r = requests.get(proxy_url2, timeout=10)
+        if r.status_code == 200:
+            return int(r.json()['fear_and_greed']['score'])
+    except:
+        pass
+    
+    # 세 가지 방법을 모두 실패하면 옛날 데이터를 띄우지 않고 예외 처리 (조회실패)
     return None
 
-# 3. 네이버 증시 API (주식/지수용)
 def fetch_naver_basic(code, type_str):
     if type_str == "world_index":
         url = f"https://m.stock.naver.com/api/index/world/{code}/basic"
@@ -74,7 +75,6 @@ def fetch_naver_basic(code, type_str):
     except:
         return None
 
-# 4. 네이버 시장지표 API (환율/유가/금용)
 def fetch_naver_marketindex(category, reuters_code):
     url = f"https://m.stock.naver.com/front-api/v1/marketIndex/prices?category={category}&reutersCode={reuters_code}"
     try:
@@ -100,7 +100,6 @@ def percentile_rank(arr, val):
     return (count / len(arr)) * 100
 
 def main():
-    # 기본 히스토리 및 ETF(RSI 계산용)를 위해 yfinance 먼저 수집
     yf_tickers = [
         "QQQ", "SPY", "SOXX", "^SOX", "^VIX", "^VXN", "TLT", "HYG", "LQD", 
         "^GSPC", "^IXIC", "KRW=X", "CL=F", "BZ=F", "^TNX", 
@@ -142,9 +141,6 @@ def main():
     except Exception as e:
         print(f"Yahoo Data download failed: {e}")
 
-    # ==========================================
-    # 네이버 실시간 데이터로 핵심 지표 강력 덮어쓰기
-    # ==========================================
     print("Overwriting with Naver real-time data...")
     naver_mapping = {
         "^KS11": lambda: fetch_naver_basic("KOSPI", "index"),
@@ -166,7 +162,6 @@ def main():
             naver_data = fetch_func()
             if naver_data:
                 if yf_ticker in market_data:
-                    # 야후에서 계산한 RSI는 보존하고 가격/변동률만 네이버 데이터로 교체
                     market_data[yf_ticker]["price"] = naver_data["price"]
                     market_data[yf_ticker]["chg"] = naver_data["chg"]
                     market_data[yf_ticker]["chg_pct"] = naver_data["chg_pct"]
@@ -180,7 +175,6 @@ def main():
         except Exception as e:
             print(f"Error fetching Naver data for {yf_ticker}: {e}")
 
-    # 나스닥 자체 공포탐욕지수 계산
     nasdaq_fg = None
     try:
         if 'df' in locals() and all(x in df.columns for x in ["QQQ", "^VXN", "TLT", "HYG", "LQD"]):
@@ -217,7 +211,6 @@ def main():
     except Exception as e:
         print(f"Error calculating Nasdaq FG: {e}")
 
-    # 최종 결과물 생성
     output = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "cnn_fg": fetch_cnn_fg(),
