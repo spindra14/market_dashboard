@@ -3,6 +3,8 @@ import pandas as pd
 import json
 import requests
 import time
+import math
+import sys
 import urllib.parse
 from datetime import datetime, timezone
 
@@ -13,46 +15,69 @@ def calc_rsi(series, period=14):
     rs = gain / loss
     return 100 - (100 / (1 + rs))
 
-def fetch_cnn_fg():
-    base_url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': '*/*',
-        'Referer': 'https://edition.cnn.com/'
+CNN_URL = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+CNN_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Origin': 'https://edition.cnn.com',
+    'Referer': 'https://edition.cnn.com/markets/fear-and-greed',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+}
+
+def cnn_rating_from_score(score):
+    # CNN 공식 구간: 0-24 / 25-44 / 45-55 / 56-75 / 76-100
+    if score <= 24: return "extreme fear"
+    if score <= 44: return "fear"
+    if score <= 55: return "neutral"
+    if score <= 75: return "greed"
+    return "extreme greed"
+
+def parse_cnn(payload):
+    fg = payload['fear_and_greed']
+    raw = float(fg['score'])
+    # CNN 화면은 소수점을 '반올림'해서 보여준다. (기존 int()는 버림이라 1점씩 낮게 나왔음)
+    # 파이썬 round()는 .5를 짝수로 보내므로 자바스크립트 Math.round와 같은 방식으로 직접 계산
+    score = int(math.floor(raw + 0.5))
+    return {
+        "score": score,
+        "raw": round(raw, 2),
+        "rating": (fg.get('rating') or cnn_rating_from_score(score)).lower(),
+        "cnn_time": fg.get('timestamp'),
     }
-    
-    # 캐시를 완벽히 무력화하기 위해 1밀리초 단위 타임스탬프 생성
-    timestamp = int(time.time() * 1000)
-    target_url = f"{base_url}?_={timestamp}"
-    
-    # 1. CNN 다이렉트 호출 시도
-    try:
-        r = requests.get(target_url, headers=headers, timeout=5)
-        if r.status_code == 200:
-            return int(r.json()['fear_and_greed']['score'])
-    except:
-        pass
-    
-    # 2. 강력한 우회 프록시 1 (CodeTabs)
-    try:
-        proxy_url1 = f"https://api.codetabs.com/v1/proxy?quest={target_url}"
-        r = requests.get(proxy_url1, timeout=10)
-        if r.status_code == 200:
-            return int(r.json()['fear_and_greed']['score'])
-    except:
-        pass
-        
-    # 3. 강력한 우회 프록시 2 (AllOrigins) - URL 인코딩 적용
-    try:
-        encoded_url = urllib.parse.quote(target_url, safe='')
-        proxy_url2 = f"https://api.allorigins.win/raw?url={encoded_url}"
-        r = requests.get(proxy_url2, timeout=10)
-        if r.status_code == 200:
-            return int(r.json()['fear_and_greed']['score'])
-    except:
-        pass
-    
-    # 세 가지 방법을 모두 실패하면 옛날 데이터를 띄우지 않고 예외 처리 (조회실패)
+
+def fetch_cnn_fg():
+    """CNN 공포탐욕지수를 가져온다. 실패하면 None (옛날 값을 대신 보여주지 않음)."""
+    # 1. CNN 직접 호출 (3회 재시도) - 가장 정확하고 가장 최신
+    for attempt in range(3):
+        try:
+            r = requests.get(f"{CNN_URL}?_={int(time.time() * 1000)}", headers=CNN_HEADERS, timeout=10)
+            if r.status_code == 200:
+                res = parse_cnn(r.json())
+                res["source"] = "cnn"
+                return res
+            print(f"CNN direct HTTP {r.status_code} (attempt {attempt + 1})")
+        except Exception as e:
+            print(f"CNN direct error (attempt {attempt + 1}): {e}")
+        time.sleep(2 * (attempt + 1))
+
+    # 2. 우회 프록시 (프록시는 캐시된 오래된 값을 줄 수 있어 직접 호출 실패 시에만 사용)
+    target_url = f"{CNN_URL}?_={int(time.time() * 1000)}"
+    proxies = [
+        ("codetabs", f"https://api.codetabs.com/v1/proxy?quest={target_url}"),
+        ("allorigins", f"https://api.allorigins.win/raw?url={urllib.parse.quote(target_url, safe='')}"),
+    ]
+    for name, url in proxies:
+        try:
+            r = requests.get(url, timeout=15)
+            if r.status_code == 200:
+                res = parse_cnn(r.json())
+                res["source"] = name
+                return res
+        except Exception as e:
+            print(f"CNN proxy {name} error: {e}")
+
     return None
 
 def fetch_naver_basic(code, type_str):
@@ -113,7 +138,7 @@ def main():
     market_data = {}
     
     try:
-        df = yf.download(yf_tickers, period="2y", interval="1d", session=session)['Close']
+        df = yf.download(yf_tickers, period="2y", interval="1d", progress=False)['Close']
         for t in yf_tickers:
             try:
                 if t not in df.columns:
@@ -140,6 +165,21 @@ def main():
                 pass
     except Exception as e:
         print(f"Yahoo Data download failed: {e}")
+
+    # 한꺼번에 받을 때 빠진 종목(예: ^TNX)은 하나씩 다시 시도
+    for t in yf_tickers:
+        if t in market_data:
+            continue
+        try:
+            s1 = yf.Ticker(t).history(period="2y", interval="1d")['Close'].dropna()
+            if len(s1) >= 2:
+                curr, prev = float(s1.iloc[-1]), float(s1.iloc[-2])
+                rsi1 = float(calc_rsi(s1).iloc[-1]) if len(s1) >= 15 else None
+                market_data[t] = {"price": curr, "chg": curr - prev, "chg_pct": (curr - prev) / prev * 100,
+                                  "rsi": round(rsi1, 1) if rsi1 is not None and pd.notnull(rsi1) else None}
+                print(f"Recovered {t} by single download")
+        except Exception as e:
+            print(f"Single download failed for {t}: {e}")
 
     print("Overwriting with Naver real-time data...")
     naver_mapping = {
@@ -211,9 +251,18 @@ def main():
     except Exception as e:
         print(f"Error calculating Nasdaq FG: {e}")
 
+    if not market_data:
+        print("No market data collected - keeping previous data.json")
+        sys.exit(1)
+
+    cnn = fetch_cnn_fg()
     output = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "cnn_fg": fetch_cnn_fg(),
+        "cnn_fg": cnn["score"] if cnn else None,
+        "cnn_fg_raw": cnn["raw"] if cnn else None,
+        "cnn_fg_rating": cnn["rating"] if cnn else None,
+        "cnn_fg_time": cnn["cnn_time"] if cnn else None,
+        "cnn_fg_source": cnn["source"] if cnn else None,
         "nasdaq_fg": nasdaq_fg,
         "market": market_data
     }
