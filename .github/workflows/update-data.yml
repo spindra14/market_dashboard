@@ -2,13 +2,24 @@ name: Update Market Data
 
 on:
   schedule:
-    # 5분마다 자동으로 데이터 수집 스크립트 실행
-    - cron: '*/5 * * * *'
-  workflow_dispatch: # 수동 새로고침 버튼 활성화
+    # 5분 간격 (정각/15분 등 혼잡 시각을 피하려고 2분부터 시작: 2,7,12,...)
+    # 주의: GitHub가 무료 서버 사정에 따라 실행을 수 분~수십 분 늦출 수 있음 (정상 동작)
+    - cron: '2-59/5 * * * *'
+  workflow_dispatch: # Actions 탭에서 수동 실행 버튼
+
+# data.json을 저장소에 push 하려면 쓰기 권한이 반드시 필요함 (없으면 403 오류로 갱신 중단)
+permissions:
+  contents: write
+
+# 이전 실행이 안 끝났는데 다음 실행이 겹쳐 push 충돌 나는 것을 방지
+concurrency:
+  group: update-market-data
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,20 +27,29 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install yfinance pandas requests
+          pip install --upgrade yfinance pandas requests
 
       - name: Fetch market data
         run: python scripts/fetch_data.py
 
       - name: Commit data.json
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
           git add data.json
-          git commit -m "Update market data" || echo "No changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update market data"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
+            echo "push failed, retry $i"
+            sleep 5
+          done
+          exit 1
