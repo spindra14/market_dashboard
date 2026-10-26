@@ -50,8 +50,8 @@
 </head>
 <body>
   <div class="header">
-    <h1>?? 종합 시장 대시보드</h1>
-    <button class="refresh-btn" id="refreshBtn" onclick="initDashboard(false)">?? 새로고침</button>
+    <h1>📊 종합 시장 대시보드</h1>
+    <button class="refresh-btn" id="refreshBtn" onclick="initDashboard(false)">🔄 새로고침</button>
   </div>
 
   <div class="time-info">
@@ -214,7 +214,7 @@
         return;
       }
 
-      const prefix = opts.cur ? "\" : opts.dol ? "$" : "";
+      const prefix = opts.cur ? "₩" : opts.dol ? "$" : "";
       const suffix = opts.pct ? "%" : "";
       const sign = dataObj.chg > 0 ? "+" : "";
       const cls = dataObj.chg > 0 ? "up" : dataObj.chg < 0 ? "down" : "flat";
@@ -242,7 +242,7 @@
       isLoading = true;
       const btn = document.getElementById('refreshBtn');
       if (!isAuto) {
-        btn.textContent = "? 업데이트 중...";
+        btn.textContent = "⏳ 업데이트 중...";
         btn.style.opacity = "0.7";
         btn.disabled = true;
       }
@@ -319,7 +319,7 @@
       } finally {
         isLoading = false;
         setTimeout(() => {
-          btn.textContent = "?? 새로고침";
+          btn.textContent = "🔄 새로고침";
           btn.style.opacity = "1";
           btn.disabled = false;
         }, 500);
