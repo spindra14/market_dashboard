@@ -50,8 +50,8 @@
 </head>
 <body>
   <div class="header">
-    <h1>📱 종합 시장 대시보드</h1>
-    <button class="refresh-btn" id="refreshBtn" onclick="initDashboard()">🔄 새로고침</button>
+    <h1>?? 종합 시장 대시보드</h1>
+    <button class="refresh-btn" id="refreshBtn" onclick="initDashboard(false)">?? 새로고침</button>
   </div>
 
   <div class="time-info">
@@ -175,10 +175,10 @@
     }
 
     function getRatingDetails(score) {
-      if (score < 25) return { text: "극단적 공포", cls: "extreme-fear" };
-      if (score < 45) return { text: "공포", cls: "fear" };
-      if (score < 55) return { text: "중립", cls: "neutral" };
-      if (score < 75) return { text: "탐욕", cls: "greed" };
+      if (score <= 24) return { text: "극단적 공포", cls: "extreme-fear" };
+      if (score <= 44) return { text: "공포", cls: "fear" };
+      if (score <= 55) return { text: "중립", cls: "neutral" };
+      if (score <= 75) return { text: "탐욕", cls: "greed" };
       return { text: "극단적 탐욕", cls: "extreme-greed" };
     }
 
@@ -214,7 +214,7 @@
         return;
       }
 
-      const prefix = opts.cur ? "₩" : opts.dol ? "$" : "";
+      const prefix = opts.cur ? "\" : opts.dol ? "$" : "";
       const suffix = opts.pct ? "%" : "";
       const sign = dataObj.chg > 0 ? "+" : "";
       const cls = dataObj.chg > 0 ? "up" : dataObj.chg < 0 ? "down" : "flat";
@@ -236,14 +236,19 @@
       if(rsiEl && dataObj.rsi) rsiEl.textContent = `RSI(14): ${dataObj.rsi}`;
     }
 
-    async function initDashboard() {
+    let isLoading = false;
+    async function initDashboard(isAuto = false) {
+      if (isLoading) return;
+      isLoading = true;
       const btn = document.getElementById('refreshBtn');
-      btn.textContent = "⏳ 업데이트 중...";
-      btn.style.opacity = "0.7";
-      btn.disabled = true;
+      if (!isAuto) {
+        btn.textContent = "? 업데이트 중...";
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+      }
 
       try {
-        const res = await fetch(`data.json?v=${new Date().getTime()}`);
+        const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
         if (!res.ok) throw new Error("데이터를 찾을 수 없습니다.");
         const data = await res.json();
         
@@ -253,10 +258,14 @@
         }
 
         const lastFetchTimestamp = new Date(data.timestamp);
-        const nextFetchTimestamp = new Date(lastFetchTimestamp.getTime() + 5 * 60000); 
+        const nextFetchTimestamp = new Date(lastFetchTimestamp.getTime() + 5 * 60000);
+        const ageMin = Math.max(0, Math.floor((Date.now() - lastFetchTimestamp.getTime()) / 60000));
+        const isStale = Date.now() > nextFetchTimestamp.getTime() + 3 * 60000;
 
-        document.getElementById("last-update-time").textContent = formatTime(lastFetchTimestamp);
-        document.getElementById("next-update-time").textContent = formatTime(nextFetchTimestamp);
+        document.getElementById("last-update-time").textContent = `${formatTime(lastFetchTimestamp)} (${ageMin}분 전)`;
+        const nextEl = document.getElementById("next-update-time");
+        nextEl.textContent = isStale ? "수집 지연 중 · 자동 재확인" : formatTime(nextFetchTimestamp);
+        nextEl.style.color = isStale ? "#dc3545" : "";
 
         if(data.cnn_fg !== undefined && data.cnn_fg !== null) {
           const cnnData = getRatingDetails(data.cnn_fg);
@@ -308,15 +317,22 @@
         console.error("데이터 로드 실패:", e);
         document.getElementById("last-update-time").textContent = "연결 오류";
       } finally {
+        isLoading = false;
         setTimeout(() => {
-          btn.textContent = "🔄 새로고침";
+          btn.textContent = "?? 새로고침";
           btn.style.opacity = "1";
           btn.disabled = false;
         }, 500);
       }
     }
 
-    document.addEventListener("DOMContentLoaded", initDashboard);
+    // 최초 로딩 + 1분마다 data.json 재확인 (서버가 5분마다 만든 새 파일을 늦어도 1분 안에 반영)
+    document.addEventListener("DOMContentLoaded", () => {
+      initDashboard(false);
+      setInterval(() => initDashboard(true), 60 * 1000);
+    });
+    // 탭/앱이 백그라운드에 있다가 돌아오면 즉시 재확인 (브라우저가 백그라운드 타이머를 멈추기 때문)
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) initDashboard(true); });
   </script>
 </body>
 </html>
